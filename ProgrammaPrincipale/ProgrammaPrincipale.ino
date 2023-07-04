@@ -308,11 +308,14 @@ void moveXY(double targetX, byte targetY) {
     servoY.write(targetY);
     deadlineForServoMovement = millis() + SERVO_MOVEMENT_TIME;
     deadlineForDCMovement = millis() + timeToWait;
+    posizioneX = targetX;
+    posizioneY = targetY;
 }
 
 void moveZ(byte targetZ) {
     servoZ.write(targetZ);
     deadlineForServoMovement = millis() + SERVO_MOVEMENT_TIME;
+    posizioneZ = targetZ;
 }
 
 void moveXYZ(double targetX, byte targetY, byte targetZ) {
