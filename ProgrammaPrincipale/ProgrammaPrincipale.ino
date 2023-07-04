@@ -99,7 +99,8 @@ bool electromagnetEnabled = false;
 unsigned long timeForWholeX = 0;
 
 // Quando finirà il movimento corrente?
-unsigned long deadlineForMovement = 0;
+unsigned long deadlineForDCMovement = 0;
+unsigned long deadlineForServoMovement = 0;
 
 void setup() {
     Serial.begin(9600);
@@ -133,7 +134,7 @@ void setup() {
         pinMode(portPhotoresistorsForLoading[i].pin, INPUT);
     }
 
-    // Calibrazione movimento asse X
+    // Calibrazione movimento asse X.
     calibrateXAxis();
 }
 
@@ -213,7 +214,7 @@ void loop() {
             break;
 
         case AC_GO_XY_PICKUP:
-            if (millis() > deadlineForMovement) {
+            if (checkDeadlines()) {
                 moveZ(180);
                 setElectromagnet(true);
                 state = AC_GO_Z_PICKUP;
@@ -222,7 +223,7 @@ void loop() {
             break;
 
         case AC_GO_Z_PICKUP:
-            if (millis() > deadlineForMovement) {
+            if (checkDeadlines()) {
                 moveZ(0);
                 state = AC_PICKEDUP;
             }
@@ -230,7 +231,7 @@ void loop() {
             break;
 
         case AC_PICKEDUP:
-            if (millis() > deadlineForMovement) {
+            if (checkDeadlines()) {
                 moveXY(posizioneDropoffX, posizioneDropoffY);
                 state = AC_GO_XY_DROP;
             }
@@ -238,7 +239,7 @@ void loop() {
             break;
 
         case AC_GO_XY_DROP:
-            if (millis() > deadlineForMovement) {
+            if (checkDeadlines()) {
                 moveZ(180);
                 state = AC_GO_Z_DROP;
             }
@@ -246,7 +247,7 @@ void loop() {
             break;
 
         case AC_GO_Z_DROP:
-            if (millis() > deadlineForMovement) {
+            if (checkDeadlines()) {
                 setElectromagnet(false);
                 moveXYZ(0, 0, 0);
                 state = AC_GO_HOME_KID;
@@ -255,7 +256,7 @@ void loop() {
             break;
 
         case AC_GO_HOME_KID:
-            if (millis() > deadlineForMovement) {
+            if (checkDeadlines()) {
                 state = AC_IDLE;
             }
 
@@ -305,17 +306,27 @@ void moveXY(double targetX, byte targetY) {
         goBackwardsInX();
     }
     servoY.write(targetY);
-    deadlineForMovement = millis() + max(SERVO_MOVEMENT_TIME, timeToWait);
+    deadlineForServoMovement = millis() + SERVO_MOVEMENT_TIME;
+    deadlineForDCMovement = millis() + timeToWait;
 }
 
 void moveZ(byte targetZ) {
     servoZ.write(targetZ);
-    deadlineForMovement = millis() + SERVO_MOVEMENT_TIME;
+    deadlineForServoMovement = millis() + SERVO_MOVEMENT_TIME;
 }
 
 void moveXYZ(double targetX, byte targetY, byte targetZ) {
     moveZ(targetZ);
     moveXY(targetX, targetY);
+}
+
+void checkDeadlines() {
+    if (millis() > deadlineForDCMovement) {
+        stopX();
+    } else {
+        return false;
+    }
+    return millis() > deadlineForServoMovement;
 }
 
 void setElectromagnet(bool enabled) {
