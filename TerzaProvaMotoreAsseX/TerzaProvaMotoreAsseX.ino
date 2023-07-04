@@ -79,7 +79,7 @@ void loop() {
 }
 
 void printTime() {
-    Serial.print("[")
+    Serial.print("[");
     Serial.print(millis());
     Serial.print("] ");
 }
