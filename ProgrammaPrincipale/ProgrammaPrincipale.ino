@@ -6,6 +6,9 @@
 #define X_D1_PIN    0
 #define X_D2_PIN    0
 
+// Velocità asse X
+#define X_SPEED 255
+
 // Pin di finecorsa inizio e fine asse X.
 #define X_START_PIN 0
 #define X_END_PIN   0
@@ -299,13 +302,13 @@ void calibrateXAxis() {
 void goBackwardsInX() {
     digitalWrite(X_D1_PIN, HIGH);
     digitalWrite(X_D2_PIN, LOW);
-    analogWrite(X_SPEED_PIN, 255);
+    analogWrite(X_SPEED_PIN, X_SPEED);
 }
 
 void goForwardInX() {
     digitalWrite(X_D1_PIN, LOW);
     digitalWrite(X_D2_PIN, HIGH);
-    analogWrite(X_SPEED_PIN, 255);
+    analogWrite(X_SPEED_PIN, X_SPEED);
 }
 
 void stopX() {
