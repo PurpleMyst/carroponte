@@ -1,5 +1,16 @@
+#define nullptr NULL
+#include <Dhcp.h>
+#include <Dns.h>
 #include <Ethernet.h>
-#include <ArduinoModbus.h>
+#include <EthernetClient.h>
+#include <EthernetServer.h>
+#include <EthernetUdp.h>
+
+#include <stddef.h>
+#include <Ethernet.h>
+#include <Modbus.h>
+#include <ModbusEthernet.h>
+#include <Servo.h>
 
 // Pin di controllo del motore DC per l'asse X.
 #define X_SPEED_PIN 0
@@ -77,19 +88,18 @@ enum Stato {
 byte mac[] = {0xE0, 0xDC, 0xA0, 0x14, 0x07, 0x80};
 byte ip[] = {192, 168, 1, 177};
 
-EthernetServer ethServer(502);
-ModbusTCPServer modbusServer;
+ModbusEthernet mb;
 
 // La posizione in X è in un range da 0 ad 1.
 double posizioneX = 0;
 
 // La posizione in Y è rappresentata come un angolo in gradi da 0 a 180.
 byte posizioneY = 0;
-Servo servoY(Y_SERVO_PIN);
+Servo servoY;
 
 // La posizione in Z è rappresentata come un angolo in gradi da 0 a 180.
 byte posizioneZ = 0;
-Servo servoZ(Z_SERVO_PIN);
+Servo servoZ;
 
 // Dove dobbiamo lasciare il container che abbiamo?
 double posizioneDropoffX;
@@ -108,17 +118,26 @@ unsigned long deadlineForServoMovement = 0;
 void setup() {
     Serial.begin(9600);
 
+    servoY.attach(Y_SERVO_PIN);
+    servoZ.attach(Z_SERVO_PIN);
+
     // Configurazione del server Ethernet e del server Modbus TCP per agire da slave.
-    Ethernet.begin(mac, ip);
-    ethServer.begin();
-    modbusServer.begin();
+    mb.config(mac, ip);
 
     // Configuriamo gli indirizzi Modbus.
     int photoresistors = (sizeof(boatPhotoresistors) + sizeof(portPhotoresistorsForUnloading) + sizeof(portPhotoresistorsForLoading)) / sizeof(Photoresistor);
-    modbusServer.configureCoils(0, 2);                           // controllo manuale + stato elettromagnete desiderato
-    modbusServer.configureDiscreteInputs(0, 1);                  // stato elettromagnete
-    modbusServer.configureInputRegisters(0, 3 + photoresistors); // posizioni correnti nelle assi + letture foto-resistori
-    modbusServer.configureHoldingRegisters(0, 3);                // posizioni desiderate nelle assi
+    mb.addCoil(0, false); // controllo manuale
+    mb.addCoil(1, false); // stato elettromagnete desiderato
+    mb.addIsts(0, false); // stato elettromagnete corrente
+    mb.addIreg(0, 0); // posizione corrente x
+    mb.addIreg(1, 0); // posizione corrente y
+    mb.addIreg(2, 0); // posizione corrente z
+    for (int i = 0; i < photoresistors; i++) {
+        mb.addIreg(3 + i, 0); // lettura foto-resistori
+    }
+    mb.addHreg(0, 0); // posizione desiderata x
+    mb.addHreg(1, 0); // posizione desiderata y
+    mb.addHreg(2, 0); // posizione desiderata z
 
     // Inizializzazione dei pin.
     pinMode(X_SPEED_PIN, OUTPUT);
@@ -143,25 +162,25 @@ void setup() {
 
 void loop() {
     // Poll del Modbus + aggiornamento dei dati che spettano a noi.
-    modbusServer.poll();
-    modbusServer.discreteInputWrite(0, electromagnetEnabled);
+    mb.task();
+    mb.setIsts(0, electromagnetEnabled);
     int irAddress = 0;
-    modbusServer.inputRegisterWrite(irAddress++, 0xFFFF * posizioneX);
-    modbusServer.inputRegisterWrite(irAddress++, posizioneY);
-    modbusServer.inputRegisterWrite(irAddress++, posizioneZ);
+    mb.setIreg(irAddress++, 0xFFFF * posizioneX);
+    mb.setIreg(irAddress++, posizioneY);
+    mb.setIreg(irAddress++, posizioneZ);
     for (int i = 0; i < sizeof(boatPhotoresistors) / sizeof(Photoresistor); i++) {
-        modbusServer.inputRegisterWrite(irAddress++, analogRead(boatPhotoresistors[i].pin));
+        mb.setIreg(irAddress++, analogRead(boatPhotoresistors[i].pin));
     }
     for (int i = 0; i < sizeof(portPhotoresistorsForUnloading) / sizeof(Photoresistor); i++) {
-        modbusServer.inputRegisterWrite(irAddress++, analogRead(portPhotoresistorsForUnloading[i].pin));
+        mb.setIreg(irAddress++, analogRead(portPhotoresistorsForUnloading[i].pin));
     }
     for (int i = 0; i < sizeof(portPhotoresistorsForLoading) / sizeof(Photoresistor); i++) {
-        modbusServer.inputRegisterWrite(irAddress++, analogRead(portPhotoresistorsForLoading[i].pin));
+        mb.setIreg(irAddress++, analogRead(portPhotoresistorsForLoading[i].pin));
     }
 
     // Se siamo fermi/arrivati, possiamo controllare se passare al controllo manuale.
     if (checkDeadlines()) {
-        if (modbusServer.coilRead(0)) {
+        if (mb.coil(0)) {
             state = MC;
         }
     }
@@ -169,15 +188,15 @@ void loop() {
     switch (state) {
         case MC:
             if (checkDeadlines()) {
-                if (!modbusServer.coilRead(0)) {
+                if (!mb.coil(0)) {
                     setElectromagnet(false);
                     moveXYZ(0, 0, 0);
                     state = AC_GO_HOME_KID;
                     break;
                 }
 
-                moveXYZ(((double) modbusServer.holdingRegisterRead(0)) / ((double) 0xFFFF), modbusServer.holdingRegisterRead(1), modbusServer.holdingRegisterRead(2));
-                setElectromagnet(modbusServer.coilRead(1));
+                moveXYZ(((double) mb.hreg(0)) / ((double) 0xFFFF), mb.hreg(1), mb.hreg(2));
+                setElectromagnet(mb.coil(1));
             }
 
             break;
@@ -347,7 +366,7 @@ void moveXYZ(double targetX, byte targetY, byte targetZ) {
     moveXY(targetX, targetY);
 }
 
-void checkDeadlines() {
+bool checkDeadlines() {
     if (millis() > deadlineForDCMovement) {
         stopX();
     } else {
