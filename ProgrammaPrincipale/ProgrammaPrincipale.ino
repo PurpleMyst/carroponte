@@ -142,9 +142,8 @@ void loop() {
     // Poll del Modbus + aggiornamento dei dati che spettano a noi.
     modbusServer.poll();
     modbusServer.discreteInputWrite(0, electromagnetEnabled);
-
     int irAddress = 0;
-    modbusServer.inputRegisterWrite(irAddress++, ((1 << 16) - 1) * posizioneX);
+    modbusServer.inputRegisterWrite(irAddress++, 0xFFFF * posizioneX);
     modbusServer.inputRegisterWrite(irAddress++, posizioneY);
     modbusServer.inputRegisterWrite(irAddress++, posizioneZ);
     for (int i = 0; i < sizeof(boatPhotoresistors) / sizeof(Photoresistor); i++) {
@@ -157,10 +156,27 @@ void loop() {
         modbusServer.inputRegisterWrite(irAddress++, analogRead(portPhotoresistorsForLoading[i].pin));
     }
 
-    // TODO: Gestione stato manuale.
+    // Se siamo fermi/arrivati, possiamo controllare se passare al controllo manuale.
+    if (checkDeadlines()) {
+        if (modbusServer.coilRead(0)) {
+            state = MC;
+        }
+    }
 
     switch (state) {
         case MC:
+            if (checkDeadlines()) {
+                if (!modbusServer.coilRead(0)) {
+                    setElectromagnet(false);
+                    moveXYZ(0, 0, 0);
+                    state = AC_GO_HOME_KID;
+                    break;
+                }
+
+                moveXYZ(((double) modbusServer.holdingRegisterRead(0)) / ((double) 0xFFFF), modbusServer.holdingRegisterRead(1), modbusServer.holdingRegisterRead(2));
+                setElectromagnet(modbusServer.coilRead(1));
+            }
+
             break;
 
         case AC_IDLE:
@@ -299,6 +315,10 @@ void stopX() {
 }
 
 void moveXY(double targetX, byte targetY) {
+    // Non si sa mai.
+    targetX = constrain(targetX, 0, 1);
+    targetY = constrain(targetY, 0, 180);
+
     unsigned long timeToWait = ((double) timeForWholeX) * abs(posizioneX - targetX);
     if (posizioneX < targetX) {
         goForwardInX();
@@ -313,6 +333,7 @@ void moveXY(double targetX, byte targetY) {
 }
 
 void moveZ(byte targetZ) {
+    targetZ = constrain(targetZ, 0, 180);
     servoZ.write(targetZ);
     deadlineForServoMovement = millis() + SERVO_MOVEMENT_TIME;
     posizioneZ = targetZ;
