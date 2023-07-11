@@ -103,7 +103,8 @@ void turnCounterClockwise() {
 void stopMotor() {
     printTime();
     Serial.println("Stopping motor");
-    analogWrite(MOTOR_SPEED_PIN, 0);
+    // Mettiamo la SPEED al massimo per fare uso del fast stop.
+    analogWrite(MOTOR_SPEED_PIN, 255);
     digitalWrite(MOTOR_DIRECTION_PIN_1, HIGH);
     digitalWrite(MOTOR_DIRECTION_PIN_2, HIGH);
 }
