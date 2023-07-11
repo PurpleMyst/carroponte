@@ -6,7 +6,7 @@
 #define MOTOR_DIRECTION_PIN_2 11
 
 // La velocità del motore è controllata tramite PWM, quindi può assumere valori da 0 a 255.
-#define MOTOR_SPEED 255
+#define MOTOR_SPEED 230
 
 // Questa volta abbiamo solo un finecorsa per la fine.
 #define POSITION_PIN 3
@@ -45,6 +45,7 @@ void setup() {
     // Misurando qunato tempo abbiamo impiegato a fare questo spostamento, possiamo inferire il
     // tempo per spostamenti parziali.
     timeForWhole = end - start;
+    currentPosition = 0.0;
 }
 
 void loop() {
