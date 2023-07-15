@@ -6,7 +6,7 @@
 #define MOTOR_DIRECTION_PIN_2 11
 
 // La velocità del motore è controllata tramite PWM, quindi può assumere valori da 0 a 255.
-#define MOTOR_SPEED 230
+#define MOTOR_SPEED 255
 
 // Questa volta abbiamo solo un finecorsa per la fine.
 #define POSITION_PIN 3
@@ -20,6 +20,10 @@ int timeForWhole;
 void setup() {
     // Apriamo la comunicazione seriale.
     Serial.begin(9600);
+
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(1000);
 
     // Lasciando la pin analogica 0 sconnessa, leggendo da essa otterremo valori praticamente
     // aleatori. Perciò, usiamo tale valore come seed.
@@ -42,10 +46,10 @@ void setup() {
     stopMotor();
     int end = millis();
 
-    // Misurando qunato tempo abbiamo impiegato a fare questo spostamento, possiamo inferire il
+    // Misurando quanto tempo abbiamo impiegato a fare questo spostamento, possiamo inferire il
     // tempo per spostamenti parziali.
     timeForWhole = end - start;
-    currentPosition = 0.0;
+    currentPosition = 1.0;
 }
 
 void loop() {

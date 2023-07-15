@@ -13,16 +13,16 @@
 #include <Servo.h>
 
 // Pin di controllo del motore DC per l'asse X.
-#define X_SPEED_PIN 0
-#define X_D1_PIN    0
-#define X_D2_PIN    0
+#define X_SPEED_PIN 9
+#define X_D1_PIN    10
+#define X_D2_PIN    11
 
-// Velocità asse X
-#define X_SPEED 255
+// Pin dei finecorsa per l'asse X.
+#define X_POSITIONS 3
+int xPositionPins[X_POSITIONS] = {2, 3, 4};
 
-// Pin di finecorsa inizio e fine asse X.
-#define X_START_PIN 0
-#define X_END_PIN   0
+// Velocità motore dell'asse X.
+#define X_SPEED 180
 
 // Pin di controllo del servomotore per l'asse Y.
 #define Y_SERVO_PIN 0
@@ -31,13 +31,13 @@
 #define Z_SERVO_PIN 0
 
 // Pin di controllo per l'abilitazione dell'elettromagnete.
-#define ELECTROMAGNET_PIN 0
+#define ELECTROMAGNET_PIN 13
 
 // Soglia scelta per la rilevazione dei foto-resistori.
-#define PHOTO_THRESHOLD 0
+#define PHOTO_THRESHOLD 100
 
-// Quanto tempo aspettiamo per il movimento dei servo?
-#define SERVO_MOVEMENT_TIME 1000
+// Quanti millisecondi aspettiamo per il movimento dei servo?
+#define SERVO_MOVEMENT_TIME 5000
 
 struct Photoresistor {
     // Pin di lettura del sensore.
@@ -48,13 +48,32 @@ struct Photoresistor {
     int y;
 };
 
+#define BOAT_PHOTORESISTORS               2
+#define PORT_PHOTORESISTORS_FOR_UNLOADING 2
+#define PORT_PHOTORESISTORS_FOR_LOADING   2
+
+#define Y_ANGLE_FOR_FIRST_ZONE  0
+#define Y_ANGLE_FOR_SECOND_ZONE 90
+
+#define Z_ANGLE_FOR_RETRACTION 0
+#define Z_ANGLE_FOR_EXTENSION 180
+
 // Array di foto-resistori per:
 // 1) Le zone presenti sulla nave;
 // 2) Le zone presenti sul porto in cui vengono posti i prossimi container da caricare.
 // 3) Le zone presenti sul porto in cui vengono posti i container scaricati.
-Photoresistor boatPhotoresistors[0];
-Photoresistor portPhotoresistorsForUnloading[0];
-Photoresistor portPhotoresistorsForLoading[0];
+Photoresistor boatPhotoresistors[BOAT_PHOTORESISTORS] = {
+    {A0, 0, Y_ANGLE_FOR_FIRST_ZONE},
+    {A1, 0, Y_ANGLE_FOR_SECOND_ZONE},
+};
+Photoresistor portPhotoresistorsForUnloading[PORT_PHOTORESISTORS_FOR_UNLOADING] = {
+    {A2, 1, Y_ANGLE_FOR_FIRST_ZONE},
+    {A3, 1, Y_ANGLE_FOR_SECOND_ZONE},
+};
+Photoresistor portPhotoresistorsForLoading[PORT_PHOTORESISTORS_FOR_LOADING] = {
+    {A4, 2, Y_ANGLE_FOR_FIRST_ZONE},
+    {A5, 2, Y_ANGLE_FOR_SECOND_ZONE},
+};
 
 enum Stato {
     // Il controllo manuale è abilitato mediante SCADA.
@@ -86,33 +105,28 @@ enum Stato {
 // Definiamo i parametri di rete; l'indirizzo MAC è stato letto un adesivo sul PLC, mentre
 // l'indirizzo IP va assegnato nel router.
 byte mac[] = {0xE0, 0xDC, 0xA0, 0x14, 0x07, 0x80};
-byte ip[] = {192, 168, 1, 177};
+byte ip[]  = {192, 168, 1, 177};
 
 ModbusEthernet mb;
 
 // La posizione in X è in un range da 0 ad 1.
-double posizioneX = 0;
+int xPosition = 0;
 
 // La posizione in Y è rappresentata come un angolo in gradi da 0 a 180.
-byte posizioneY = 0;
+int yPosition = 0;
 Servo servoY;
 
 // La posizione in Z è rappresentata come un angolo in gradi da 0 a 180.
-byte posizioneZ = 0;
+int zPosition = 0;
 Servo servoZ;
 
 // Dove dobbiamo lasciare il container che abbiamo?
-double posizioneDropoffX;
-byte posizioneDropoffY;
+int posizioneDropoffX;
+int posizioneDropoffY;
 
 // Lo stato dell'elettromagnete.
 bool electromagnetEnabled = false;
 
-// Il tempo necessario per andare dall'inizio dell'asse x alla fine durante la calibrazione.
-unsigned long timeForWholeX = 0;
-
-// Quando finirà il movimento corrente?
-unsigned long deadlineForDCMovement = 0;
 unsigned long deadlineForServoMovement = 0;
 
 void setup() {
@@ -125,7 +139,7 @@ void setup() {
     mb.config(mac, ip);
 
     // Configuriamo gli indirizzi Modbus.
-    int photoresistors = (sizeof(boatPhotoresistors) + sizeof(portPhotoresistorsForUnloading) + sizeof(portPhotoresistorsForLoading)) / sizeof(Photoresistor);
+    int photoresistors = BOAT_PHOTORESISTORS + PORT_PHOTORESISTORS_FOR_UNLOADING + PORT_PHOTORESISTORS_FOR_LOADING;
     mb.addCoil(0, false); // controllo manuale
     mb.addCoil(1, false); // stato elettromagnete desiderato
     mb.addIsts(0, false); // stato elettromagnete corrente
@@ -146,18 +160,28 @@ void setup() {
     pinMode(Y_SERVO_PIN, OUTPUT);
     pinMode(Z_SERVO_PIN, OUTPUT);
     pinMode(ELECTROMAGNET_PIN, OUTPUT);
-    for (int i = 0; i < sizeof(boatPhotoresistors); i++) {
+    for (int i = 0; i < BOAT_PHOTORESISTORS; i++) {
         pinMode(boatPhotoresistors[i].pin, INPUT);
     }
-    for (int i = 0; i < sizeof(portPhotoresistorsForUnloading); i++) {
+    for (int i = 0; i < PORT_PHOTORESISTORS_FOR_UNLOADING; i++) {
         pinMode(portPhotoresistorsForUnloading[i].pin, INPUT);
     }
-    for (int i = 0; i < sizeof(portPhotoresistorsForLoading); i++) {
+    for (int i = 0; i < PORT_PHOTORESISTORS_FOR_LOADING; i++) {
         pinMode(portPhotoresistorsForLoading[i].pin, INPUT);
     }
+    for (int i = 0; i < X_POSITIONS; i++) {
+        pinMode(xPositions[i].pin, INPUT_PULLUP);
+    }
 
-    // Calibrazione movimento asse X.
-    calibrateXAxis();
+    goHome();
+}
+
+void goHome() {
+    goBackwardsInX();
+    moveY(0);
+    moveZ(Z_ANGLE_FOR_RETRACTION);
+    setElectromagnet(false);
+    state = AC_GO_HOME_KID;
 }
 
 void loop() {
@@ -165,21 +189,21 @@ void loop() {
     mb.task();
     mb.setIsts(0, electromagnetEnabled);
     int irAddress = 0;
-    mb.setIreg(irAddress++, 0xFFFF * posizioneX);
-    mb.setIreg(irAddress++, posizioneY);
-    mb.setIreg(irAddress++, posizioneZ);
-    for (int i = 0; i < sizeof(boatPhotoresistors) / sizeof(Photoresistor); i++) {
+    mb.setIreg(irAddress++, xPosition);
+    mb.setIreg(irAddress++, yPosition);
+    mb.setIreg(irAddress++, zPosition);
+    for (int i = 0; i < BOAT_PHOTORESISTORS; i++) {
         mb.setIreg(irAddress++, analogRead(boatPhotoresistors[i].pin));
     }
-    for (int i = 0; i < sizeof(portPhotoresistorsForUnloading) / sizeof(Photoresistor); i++) {
+    for (int i = 0; i < PORT_PHOTORESISTORS_FOR_UNLOADING; i++) {
         mb.setIreg(irAddress++, analogRead(portPhotoresistorsForUnloading[i].pin));
     }
-    for (int i = 0; i < sizeof(portPhotoresistorsForLoading) / sizeof(Photoresistor); i++) {
+    for (int i = 0; i < PORT_PHOTORESISTORS_FOR_LOADING; i++) {
         mb.setIreg(irAddress++, analogRead(portPhotoresistorsForLoading[i].pin));
     }
 
     // Se siamo fermi/arrivati, possiamo controllare se passare al controllo manuale.
-    if (checkDeadlines()) {
+    if (arrived()) {
         if (mb.coil(0)) {
             state = MC;
         }
@@ -187,15 +211,13 @@ void loop() {
 
     switch (state) {
         case MC:
-            if (checkDeadlines()) {
+            if (arrived()) {
                 if (!mb.coil(0)) {
-                    setElectromagnet(false);
-                    moveXYZ(0, 0, 0);
-                    state = AC_GO_HOME_KID;
+                    goHome();
                     break;
                 }
 
-                moveXYZ(((double) mb.hreg(0)) / ((double) 0xFFFF), mb.hreg(1), mb.hreg(2));
+                moveXYZ(mb.hreg(0), mb.hreg(1), mb.hreg(2));
                 setElectromagnet(mb.coil(1));
             }
 
@@ -252,8 +274,8 @@ void loop() {
             break;
 
         case AC_GO_XY_PICKUP:
-            if (checkDeadlines()) {
-                moveZ(180);
+            if (arrived()) {
+                moveZ(Z_ANGLE_FOR_EXTENSION);
                 setElectromagnet(true);
                 state = AC_GO_Z_PICKUP;
             }
@@ -261,15 +283,15 @@ void loop() {
             break;
 
         case AC_GO_Z_PICKUP:
-            if (checkDeadlines()) {
-                moveZ(0);
+            if (arrived()) {
+                moveZ(Z_ANGLE_FOR_RETRACTION);
                 state = AC_PICKEDUP;
             }
 
             break;
 
         case AC_PICKEDUP:
-            if (checkDeadlines()) {
+            if (arrived()) {
                 moveXY(posizioneDropoffX, posizioneDropoffY);
                 state = AC_GO_XY_DROP;
             }
@@ -277,45 +299,27 @@ void loop() {
             break;
 
         case AC_GO_XY_DROP:
-            if (checkDeadlines()) {
-                moveZ(180);
+            if (arrived()) {
+                moveZ(Z_ANGLE_FOR_EXTENSION);
                 state = AC_GO_Z_DROP;
             }
 
             break;
 
         case AC_GO_Z_DROP:
-            if (checkDeadlines()) {
-                setElectromagnet(false);
-                moveXYZ(0, 0, 0);
-                state = AC_GO_HOME_KID;
+            if (arrived()) {
+                goHome();
             }
 
             break;
 
         case AC_GO_HOME_KID:
-            if (checkDeadlines()) {
+            if (arrived()) {
                 state = AC_IDLE;
             }
 
             break;
     }
-}
-
-void calibrateXAxis() {
-    goBackwardsInX();
-    while (digitalRead(X_START_PIN) != HIGH) {
-        delay(10);
-    }
-    stopX();
-    unsigned long startTime = millis();
-    goForwardInX();
-    while (digitalRead(X_END_PIN) != HIGH) {
-        delay(10);
-    }
-    stopX();
-    unsigned long endTime = millis();
-    timeForWholeX = endTime - startTime;
 }
 
 void goBackwardsInX() {
@@ -331,48 +335,51 @@ void goForwardInX() {
 }
 
 void stopX() {
+    analogWrite(X_SPEED_PIN, 0xFF);
     digitalWrite(X_D1_PIN, LOW);
     digitalWrite(X_D2_PIN, LOW);
-    analogWrite(X_SPEED_PIN, 0);
 }
 
-void moveXY(double targetX, byte targetY) {
-    // Non si sa mai.
-    targetX = constrain(targetX, 0, 1);
-    targetY = constrain(targetY, 0, 180);
-
-    unsigned long timeToWait = ((double) timeForWholeX) * abs(posizioneX - targetX);
-    if (posizioneX < targetX) {
+void moveX(int targetX) {
+    targetX = constrain(targetX, 0, X_POSITIONS);
+    if (xPosition < targetX) {
         goForwardInX();
     } else {
         goBackwardsInX();
     }
-    servoY.write(targetY);
-    deadlineForServoMovement = millis() + SERVO_MOVEMENT_TIME;
-    deadlineForDCMovement = millis() + timeToWait;
-    posizioneX = targetX;
-    posizioneY = targetY;
+    deadlineForXMovement = millis() + X_MOVEMENT_TIME;
+    xPosition = targetX;
 }
 
-void moveZ(byte targetZ) {
+void moveY(int targetY) {
+    targetY = constrain(targetY, 0, 180);
+    servoY.write(targetY);
+    deadlineForServoMovement = millis() + SERVO_MOVEMENT_TIME;
+    yPosition = targetY;
+}
+
+void moveZ(int targetZ) {
     targetZ = constrain(targetZ, 0, 180);
     servoZ.write(targetZ);
     deadlineForServoMovement = millis() + SERVO_MOVEMENT_TIME;
-    posizioneZ = targetZ;
+    zPosition = targetZ;
 }
 
-void moveXYZ(double targetX, byte targetY, byte targetZ) {
+void moveXY(int targetX, int targetY) {
+    moveY(targetY);
+    moveX(targetX);
+}
+
+void moveXYZ(int targetX, int targetY, int targetZ) {
     moveZ(targetZ);
     moveXY(targetX, targetY);
 }
 
-bool checkDeadlines() {
-    if (millis() > deadlineForDCMovement) {
-        stopX();
-    } else {
-        return false;
-    }
-    return millis() > deadlineForServoMovement;
+bool arrived() {
+    if (digitalRead(xPositionPins[xPosition]) != HIGH) return false;
+    if (millis() < deadlineForServoMovement) return false;
+    stopX();
+    return true;
 }
 
 void setElectromagnet(bool enabled) {
