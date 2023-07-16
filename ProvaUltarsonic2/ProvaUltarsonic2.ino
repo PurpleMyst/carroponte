@@ -71,23 +71,6 @@ void blink(int times) {
   }
 }
 
-void goForward() {
-  analogWrite(MOTOR_SPEED_PIN, constrain(abs(speed), 0, 0xFF));
-  digitalWrite(MOTOR_DIRECTION_PIN_1, LOW);
-  digitalWrite(MOTOR_DIRECTION_PIN_2, HIGH);
-}
-
-void goBackward() {
-  analogWrite(MOTOR_SPEED_PIN, constrain(abs(speed), 0, 0xFF));
-  digitalWrite(MOTOR_DIRECTION_PIN_1, HIGH);
-  digitalWrite(MOTOR_DIRECTION_PIN_2, LOW);
-}
-
-void stopMotor() {
-  analogWrite(MOTOR_SPEED_PIN, 0xFF);
-  digitalWrite(MOTOR_DIRECTION_PIN_1, LOW);
-  digitalWrite(MOTOR_DIRECTION_PIN_2, LOW);
-}
 
 void move() {
   speed = MOTOR_SPEED;
