@@ -1,18 +1,14 @@
-#include <Ultrasonic.h>
-#include <PID_v1.h>
-
 #define MOTOR_SPEED_PIN 9
 #define MOTOR_DIRECTION_PIN_1 10
 #define MOTOR_DIRECTION_PIN_2 11
-// #define MOTOR_SPEED 120
-#define X_TOLERANCE 0.3
-#define POSITIONS 3
-
+#define MOTOR_SPEED 150
 #define TRIG_PIN 7
 #define ECHO_PIN 8
+#define POSITIONS 3
 
-double pid_setpoint, pid_input, pid_output;
-PID pid(&pid_input, &pid_output, &pid_setpoint, 20, 50, 10, DIRECT);
+double desiredPosition = 0.0;
+double positions[POSITIONS] = { 10, 15.4, 18.5 };
+double speed = MOTOR_SPEED;
 
 double measure() {
   digitalWrite(TRIG_PIN, LOW);
@@ -20,24 +16,17 @@ double measure() {
   digitalWrite(TRIG_PIN, HIGH);
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
-  
+
   double d = ((double)pulseIn(ECHO_PIN, HIGH)) / 58.3;
   return d;
 }
 
-double positions[POSITIONS] = { 10, 16, 20 };
-
 void goHome();
 
 void setup() {
-  // initialize serial communication
   Serial.begin(9600);
   while (!Serial) {};
   pinMode(TRIG_PIN, OUTPUT);
-  pid.SetMode(AUTOMATIC);
-  pid.SetOutputLimits(-180, 180);
-
-  // configure pins
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(MOTOR_SPEED_PIN, OUTPUT);
   pinMode(MOTOR_DIRECTION_PIN_1, OUTPUT);
@@ -53,7 +42,7 @@ void setup() {
     Serial.print("Calibration for position:");
     Serial.println(i);
     blink(i + 1);
-    pid_setpoint = positions[i];
+    desiredPosition = positions[i];
     move();
     delay(2500);
   }
@@ -66,9 +55,11 @@ void setup() {
 }
 
 void loop() {
-  pid_setpoint = positions[random(0, POSITIONS)];
+  int idx = random(0, POSITIONS);
+  blink(idx + 1);
+  desiredPosition = positions[idx];
   move();
-  delay(5000);
+  delay(3000);
 }
 
 void blink(int times) {
@@ -81,43 +72,56 @@ void blink(int times) {
 }
 
 void goForward() {
-  analogWrite(MOTOR_SPEED_PIN, constrain(abs(pid_output), 0, 0xFF));
+  analogWrite(MOTOR_SPEED_PIN, constrain(abs(speed), 0, 0xFF));
   digitalWrite(MOTOR_DIRECTION_PIN_1, LOW);
   digitalWrite(MOTOR_DIRECTION_PIN_2, HIGH);
 }
 
 void goBackward() {
-  analogWrite(MOTOR_SPEED_PIN, constrain(abs(pid_output), 0, 0xFF));
+  analogWrite(MOTOR_SPEED_PIN, constrain(abs(speed), 0, 0xFF));
   digitalWrite(MOTOR_DIRECTION_PIN_1, HIGH);
   digitalWrite(MOTOR_DIRECTION_PIN_2, LOW);
 }
 
 void stopMotor() {
   analogWrite(MOTOR_SPEED_PIN, 0xFF);
-  digitalWrite(MOTOR_DIRECTION_PIN_1, HIGH);
-  digitalWrite(MOTOR_DIRECTION_PIN_2, HIGH);
+  digitalWrite(MOTOR_DIRECTION_PIN_1, LOW);
+  digitalWrite(MOTOR_DIRECTION_PIN_2, LOW);
 }
 
 void move() {
+  speed = MOTOR_SPEED;
+
+  unsigned long lastUpdateTime = millis();
+  double lastUpdatePos = measure();
   for (;;) {
-    pid_input = measure();
-    if (abs(pid_input - pid_setpoint) <= 0.33) {
+    double pos = measure();
+    Serial.print(pos);
+    Serial.print(" => ");
+    Serial.println(desiredPosition);
+    if (abs(desiredPosition - pos) <= 0.15) {
       stopMotor();
       break;
     }
-    pid.Compute();
-    Serial.print(pid_setpoint);
-    Serial.print(' ');
-    Serial.print(pid_input);
-    Serial.print(' ');
-    Serial.println(pid_output);
-    if (pid_output > 0) goForward();
-    else if (pid_output < 0) goBackward();
-    else stopMotor();
+    if (millis() >= lastUpdateTime + 2000) {
+      lastUpdateTime = millis();
+      if (abs(lastUpdatePos - pos) <= 0.5) {
+        Serial.println("BOOST!!!");
+        analogWrite(MOTOR_SPEED_PIN, 0xFF);
+        delay(100);
+        analogWrite(MOTOR_SPEED_PIN, MOTOR_SPEED);
+      } else {
+        speed = MOTOR_SPEED;
+      }
+      
+      lastUpdatePos = pos;
+    }
+    if (desiredPosition > pos) goForward();
+    else goBackward();
   }
 }
 
 void goHome() {
-  pid_setpoint = 7.0;
+  desiredPosition = 7.0;
   move();
 }

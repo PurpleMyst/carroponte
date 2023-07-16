@@ -11,15 +11,21 @@
 #include <Modbus.h>
 #include <ModbusEthernet.h>
 #include <Servo.h>
+#include <Ultrasonic.h>
 
 // Pin di controllo del motore DC per l'asse X.
 #define X_SPEED_PIN 9
 #define X_D1_PIN    10
 #define X_D2_PIN    11
 
-// Pin dei finecorsa per l'asse X.
+// Distanze per le varie posizioni dell'asse X.
 #define X_POSITIONS 3
-int xPositionPins[X_POSITIONS] = {2, 3, 4};
+int xPositionDistances[X_POSITIONS] = {2, 3, 4};
+
+#define TRIGGER_PIN 12
+#define ECHO_PIN    13
+#define X_TOLERANCE 1
+Ultrasonic xDistanceSensor(TRIGGER_PIN, ECHO_PIN);
 
 // Velocità motore dell'asse X.
 #define X_SPEED 180
@@ -225,11 +231,11 @@ void loop() {
 
         case AC_IDLE:
             // Controlliamo se ci sono carichi sulla nave, se si andiamoli a prendere.
-            for (int i = 0; i < sizeof(boatPhotoresistors) / sizeof(Photoresistor); i++) {
+            for (int i = 0; i < BOAT_PHOTORESISTORS; i++) {
                 if (containerDetected(boatPhotoresistors[i])) {
                     // Troviamo una posizione di drop off.
                     posizioneDropoffX = posizioneDropoffY = -1;
-                    for (int j = 0; j < sizeof(portPhotoresistorsForUnloading) / sizeof(Photoresistor); j++) {
+                    for (int j = 0; j < PORT_PHOTORESISTORS_FOR_UNLOADING; j++) {
                         if (!containerDetected(portPhotoresistorsForUnloading[j])) {
                             posizioneDropoffX = portPhotoresistorsForUnloading[j].x;
                             posizioneDropoffY = portPhotoresistorsForUnloading[j].y;
@@ -248,11 +254,11 @@ void loop() {
             }
 
             // Se non ci sono carichi sulla nave, allora possiamo caricare ciò che sta sul porto.
-            for (int i = 0; i < sizeof(portPhotoresistorsForLoading) / sizeof(Photoresistor); i++) {
+            for (int i = 0; i < PORT_PHOTORESISTORS_FOR_LOADING; i++) {
                 if (containerDetected(portPhotoresistorsForLoading[i])) {
                     // Troviamo una posizione di drop off.
                     posizioneDropoffX = posizioneDropoffY = -1;
-                    for (int j = 0; j < sizeof(boatPhotoresistors) / sizeof(Photoresistor); j++) {
+                    for (int j = 0; j < BOAT_PHOTORESISTORS; j++) {
                         if (!containerDetected(boatPhotoresistors[j])) {
                             posizioneDropoffX = boatPhotoresistors[j].x;
                             posizioneDropoffY = boatPhotoresistors[j].y;
@@ -341,13 +347,11 @@ void stopX() {
 }
 
 void moveX(int targetX) {
-    targetX = constrain(targetX, 0, X_POSITIONS);
     if (xPosition < targetX) {
         goForwardInX();
     } else {
         goBackwardsInX();
     }
-    deadlineForXMovement = millis() + X_MOVEMENT_TIME;
     xPosition = targetX;
 }
 
@@ -376,10 +380,10 @@ void moveXYZ(int targetX, int targetY, int targetZ) {
 }
 
 bool arrived() {
-    if (digitalRead(xPositionPins[xPosition]) != HIGH) return false;
-    if (millis() < deadlineForServoMovement) return false;
+    int xDistance = xDistanceSensor.read();
+    if (abs(xDistance - xPosition) > X_TOLERANCE) return false;
     stopX();
-    return true;
+    return (millis() >= deadlineForServoMovement);
 }
 
 void setElectromagnet(bool enabled) {
