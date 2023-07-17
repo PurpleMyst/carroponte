@@ -1,0 +1,15 @@
+[0] Config.pm:306> INFO - This is Biber 2.18
+[0] Config.pm:309> INFO - Logfile is 'relazione.blg'
+[148] biber-MSWIN64:340> INFO - === 
+[203] Biber.pm:418> INFO - Reading 'relazione.bcf'
+[352] Biber.pm:978> INFO - Found 4 citekeys in bib section 0
+[375] Biber.pm:4401> INFO - Processing section 0
+[398] Biber.pm:4592> INFO - Looking for bibtex file 'relazione.bib' for section 0
+[488] bibtex.pm:1713> INFO - LaTeX decoding ...
+[497] bibtex.pm:1518> INFO - Found BibTeX data source 'relazione.bib'
+[578] UCollate.pm:68> INFO - Overriding locale 'it-IT' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[578] UCollate.pm:68> INFO - Overriding locale 'it-IT' defaults 'variable = shifted' with 'variable = non-ignorable'
+[579] Biber.pm:4221> INFO - Sorting list 'nty/global//global/global' of type 'entry' with template 'nty' and locale 'it-IT'
+[579] Biber.pm:4227> INFO - No sort tailoring available for locale 'it-IT'
+[586] bbl.pm:654> INFO - Writing 'relazione.bbl' with encoding 'UTF-8'
+[591] bbl.pm:757> INFO - Output to relazione.bbl

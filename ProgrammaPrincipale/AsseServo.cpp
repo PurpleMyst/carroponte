@@ -1,17 +1,15 @@
 #include "AsseServo.hpp"
 
-AsseServo::AsseServo(uint8_t pin) { servo.attach(pin); }
+void AsseServo::attach(uint8_t pin, int16_t initialPosition) {
+  servo.attach(pin);
+  moveTo(initialPosition);
+}
 
-void AsseServo::setDesiredPosition(uint8_t position) { desiredPosition = position; }
-
-bool AsseServo::tick() {
-    if (servo.read() < desiredPosition) {
-        servo.write(servo.read() + 1);
-        return false;
-    } else if (servo.read() > desiredPosition) {
-        servo.write(servo.read() - 1);
-        return false;
-    } else {
-        return true;
-    }
+void AsseServo::moveTo(int16_t desiredPosition) {
+  int diff = servo.read() > desiredPosition ? -1 : 1;
+  for (int i = servo.read(); i != desiredPosition; i += diff) {
+    servo.write(i);
+    delay(7);
+  }
+  delay(50);
 }

@@ -3,14 +3,10 @@
 #include "Arduino.h"
 
 class AsseServo {
-   private:
+private:
     Servo servo;
-    uint8_t desiredPosition;
+public:
+    void attach(uint8_t pin, int16_t initialPosition);
 
-   public:
-    AsseServo(uint8_t pin);
-
-    void setDesiredPosition(uint8_t position);
-
-    bool tick();
+    void moveTo(int16_t desiredPosition);
 };

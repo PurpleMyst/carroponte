@@ -8,11 +8,13 @@ bool checkBoost(double currentPos) {
         lastBoostCheckPos = currentPos;
         return false;
     }
-    if ((millis() - lastBoostCheckTime) < BOOST_CHECK_INTERVAL) {
+    if ((millis() - lastBoostCheckTime) <
+        BOOST_CHECK_INTERVAL) {
         return false;
     }
     lastBoostCheckTime = millis();
-    if (abs(currentPos - lastBoostCheckPos) < BOOST_CHECK_TOLERANCE) {
+    if (abs(currentPos - lastBoostCheckPos) <
+        BOOST_CHECK_TOLERANCE) {
         return false;
     }
     lastBoostCheckPos = currentPos;
@@ -21,7 +23,13 @@ bool checkBoost(double currentPos) {
 
 void resetBoost() { lastBoostCheckTime = -1; }
 
-void setSpeed(uint8_t speed) { analogWrite(SPEED_PIN, speed); }
+void setSpeed(uint8_t speed) {
+  Serial.print("writing to ");
+  Serial.print(SPEED_PIN);
+  Serial.print(" a speed of ");
+  Serial.println(speed);
+    analogWrite(SPEED_PIN, (int) speed);
+}
 
 void forward() {
     setSpeed(DEFAULT_SPEED);
@@ -48,31 +56,49 @@ double actualPosition() {
     digitalWrite(TRIGGER_PIN, HIGH);
     delayMicroseconds(10);
     digitalWrite(TRIGGER_PIN, LOW);
-    return ((double)pulseIn(ECHO_PIN, HIGH)) / 58.3;
+    return ((double)pulseIn(ECHO_PIN, HIGH)) /
+           58.3;
 }
 
-bool tick() {
+void moveTo(double desiredPosition) {
     double currentPos = actualPosition();
+        if (currentPos < desiredPosition) {
+        Serial.println(" FORWARD");
+        forward();
+    } else {
+      Serial.println(" BACKWARD");
+        backward();
+    }
+    setSpeed(BOOST_SPEED);
+    delay(BOOST_AMOUNT);
+    setSpeed(DEFAULT_SPEED);
 
-    double error = abs(currentPos - desiredPosition);
+  for (;;) {
+    double currentPos = actualPosition();
+    Serial.print(currentPos);
+    Serial.print(" => ");
+    Serial.print(desiredPosition);
+
+    double error =
+        abs(currentPos - desiredPosition);
     if (error <= ERROR_TOLERANCE) {
         stop();
-        return true;
+        return;
     }
 
-    if (checkBoost(currentPos)) {
+    /*if (checkBoost(currentPos)) {
         setSpeed(BOOST_SPEED);
         delay(BOOST_AMOUNT);
         setSpeed(DEFAULT_SPEED);
-    }
+    }*/
 
     if (currentPos < desiredPosition) {
+        Serial.println(" FORWARD");
         forward();
     } else {
+      Serial.println(" BACKWARD");
         backward();
     }
-
-    return false;
-}
+}}
 
 }  // namespace XAxis

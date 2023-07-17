@@ -26,7 +26,9 @@ void loop() {
   digitalWrite(13, HIGH);
   delay(1000);
   moveServo(z, Z_RETRACT);
+  moveServo(y, Y_RETRACT);
   delay(1000);
+  moveServo(y, Y_EXTEND);
   moveServo(z, Z_EXTEND);
   delay(1000);
   digitalWrite(13, LOW);

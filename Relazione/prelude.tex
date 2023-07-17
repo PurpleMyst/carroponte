@@ -1,0 +1,309 @@
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{table}{xcolor}
+\PassOptionsToPackage{centerlast}{caption}
+% \PassOptionsToPackage{chapter}{minted}
+
+\documentclass[a4paper,12pt]{article}
+
+% essential packages
+% NB: loading mathtools after unicode-math seems to break underbracket
+\usepackage{fontspec}
+\usepackage[italian]{babel}
+\usepackage{mathtools,amssymb,unicode-math}
+\setmainfont{Times New Roman}
+\setmathfont[Scale=MatchLowercase]{Cambria Math}
+\setmonofont[Scale=MatchLowercase]{Iosevka}
+
+% geometry
+\usepackage[a4paper]{geometry}
+\geometry{hmargin=1cm,vmargin=2cm}
+
+% general packages
+\usepackage[final]{microtype}
+\usepackage{indentfirst}
+
+\usepackage{float,flafter,caption,subcaption,graphicx,import}
+\usepackage{xcolor,xurl}
+\usepackage{qrcode}
+
+\usepackage{multicol}
+
+\usepackage{enumitem}
+\setlist{noitemsep,topsep=0pt}
+\setenumerate[1]{label={\arabic*)},ref={(\arabic*)}}
+\setenumerate[2]{label={\arabic*.},ref={\arabic*.}}
+\setdescription{wide, font=\normalfont}
+\newlist{romenumerate}{enumerate}{2}
+\setlist[romenumerate,1]{label={\Roman*)},ref={\Roman*}}
+\setlist[romenumerate,2]{label={\roman*)},ref={\roman*}}
+\newlist{hookdesc}{itemize}{1}
+\setlist[hookdesc]{label=$\hookrightarrow$, left=\parindent, beginpenalty=10000}
+
+% Space above and below a float in the middle of the main text
+\setlength{\intextsep}{0.25cm}
+
+% float parameters from https://texfaq.org/FAQ-floats
+\renewcommand{\topfraction}{.85}
+\renewcommand{\bottomfraction}{.7}
+\renewcommand{\textfraction}{.15}
+\renewcommand{\floatpagefraction}{.66}
+\renewcommand{\dbltopfraction}{.66}
+\renewcommand{\dblfloatpagefraction}{.66}
+\setcounter{topnumber}{9}
+\setcounter{bottomnumber}{9}
+\setcounter{totalnumber}{20}
+\setcounter{dbltopnumber}{9}
+
+% math packages
+\usepackage{booktabs,tabularx}
+\usepackage{nicematrix}
+\usepackage[makeroom]{cancel}
+\renewcommand\CancelColor{\color{cadmiumred}}
+
+\usepackage{witharrows}
+\WithArrowsOptions{displaystyle,wrap-lines,tikz={-Latex, font={\small}}}
+\AtBeginEnvironment{DispWithArrows*}{\ifvmode\noindent\smallskip\fi} % prevent overfull hbox
+
+\NiceMatrixOptions{cell-space-limits = 2pt}
+\newenvironment{NiceCases}{\left\lbrace\begin{NiceArray}{*{2}{>{\displaystyle}l}}}{\end{NiceArray}\right.}
+
+\NewDocumentEnvironment{quantities}{m}%
+    {\begin{NiceArray}{@{}*{#1}{>{\displaystyle}c@{\,\,\,\,}} @{\!\!\!\!}}}%
+    {\end{NiceArray}}
+
+\NewDocumentCommand\mathrnote{m}{\mathrlap{\qquad #1}}
+\NewDocumentCommand\con{m}{\mathrnote{\text{con } #1}}
+
+\NewDocumentCommand\hmath{m}{\renewcommand\fboxsep{0pt}\colorbox{cadmiumyellow}{#1}}
+
+% tikz
+\usepackage{tikz,tkz-base,tkz-euclide,circuitikz}
+\usetikzlibrary{external,positioning,arrows.meta,shapes.geometric,matrix,fit}
+\ctikzset{voltage/american minus={}, american voltages, american inductors}
+% https://tex.stackexchange.com/a/570721/260531
+\tikzexternalize[prefix=figures/]
+\tikzexternaldisable
+\NewDocumentCommand\ExternalizeThis{m}{\tikzexternalenable\tikzsetnextfilename{#1}}
+
+\tikzset{
+% https://tex.stackexchange.com/a/69225/260531
+mid arrow/.style={postaction={decorate,decoration={
+    markings,
+    mark=at position .5 with {\arrow[#1]{Latex}}
+}}},
+point/.style={inner sep = 1pt, circle, fill},
+}
+
+\newlength\CircleArrowLength
+\NewDocumentCommand\CircleArrowRight{mm}{
+    \setlength\CircleArrowLength{\maxof{\widthof{#2}}{\heightof{#2}}}
+    \draw [-Latex, anchor=center, shift=#1]
+        node {#2}
+        (0,1.2\CircleArrowLength) arc (85:-240:1.2\CircleArrowLength);
+}
+\NewDocumentCommand\CircleArrowLeft{mm}{
+    \setlength\CircleArrowLength{\maxof{\widthof{#2}}{\heightof{#2}}}
+    \draw [Latex-, anchor=center, shift=#1]
+        node {#2}
+        (0,1.2\CircleArrowLength) arc (85:-240:1.2\CircleArrowLength);
+}
+
+% table of contents
+\usepackage{sectsty,tocloft}
+\setcounter{tocdepth}{3}
+\allsectionsfont{\bfseries}
+\addtolength\cftsecnumwidth{1em}
+\addtolength\cftsubsecnumwidth{1em}
+\def\cftchapfont{\bfseries}
+\renewcommand\cftsecfont{\bfseries}
+\renewcommand\cftsubsecfont{\bfseries}
+\renewcommand\cftsubsubsecfont{\bfseries}
+\addto\captionsitalian{%
+    \renewcommand\contentsname{\bfseries Indice}%
+    \renewcommand\abstractname{\bfseries Abstract}%
+}
+
+% math commands
+\usepackage{dsfont}
+\newcommand\set[1]{\mathds{#1}}
+\newcommand\R{\set{R}}
+\newcommand\pinfty{{+\infty}}
+\newcommand\minfty{{-\infty}}
+\newcommand\seg[1]{\overline{#1}} % segment
+
+\usepackage{derivative}
+\NewCommandCopy\pdfrac\pdv
+
+\DeclarePairedDelimiter\pars{\lparen}{\rparen}
+\DeclarePairedDelimiter\brak{\lbrack}{\rbrack}
+\DeclarePairedDelimiter\brac{\lbrace}{\rbrace}
+\DeclarePairedDelimiter\angl{\langle}{\rangle}
+\DeclarePairedDelimiter\bars{\lvert}{\rvert}
+\DeclarePairedDelimiter\modu{\lVert}{\rVert}
+
+\newcommand\quot[1]{``#1''}
+
+\NewCommandCopy\mono\texttt
+\newcommand\code[1]{\colorbox{gray!40}{\textcolor{cadmiumgreen}{\texttt{#1}}}}
+
+\newcommand\vv{\vec{v}}
+\newcommand\vu{\vec{u}}
+\newcommand\vx{\vec{x}}
+\newcommand\vw{\vec{w}}
+\newcommand\va{\vec{a}}
+\newcommand\vb{\vec{b}}
+\newcommand\vzero{\vec{0}}
+\newcommand\vr{\vec{r}}
+\newcommand\vR{\vec{R}}
+\newcommand\vM{\vec{M}}
+
+\newcommand\hv{\hat{v}}
+\newcommand\hu{\hat{u}}
+\newcommand\he{\hat{e}}
+\newcommand\hk{\hat{k}}
+
+\NewDocumentCommand\f{s O{f} m}{#2\IfBooleanTF{#1}{\pars*}{\pars}{#3}}
+\newcommand\finv[2][f]{#1^{-1}\pars{#2}}
+\newcommand\fp[2][f]{\f[#1']{#2}}
+\newcommand\fpp[2][f]{\f[#1'']{#2}}
+\NewDocumentCommand\ft{m}{\f[#1]{t}}
+
+\newcommand\g[2][g]{#1\pars{#2}}
+\newcommand\gp[2][g]{\f[#1']{#2}}
+
+\newcommand\iu{\mathrm{i}\mkern1mu}
+\newcommand\notimplies{\nRightarrow}
+
+\newcommand\md{\mathrm{d}}
+\newcommand\dx{\md x}
+\newcommand\dy{\md y}
+\newcommand\dz{\md z}
+\newcommand\dt{\md t}
+\newcommand\Dt{\Delta t}
+
+\ifdefined\parallelslant\renewcommand\parallel\parallelslant\fi
+
+\newcommand\qed{\hfill\ensuremath{\square}}
+
+\newcommand\rg{\mathop{\mathrm{rg}}\nolimits}
+\newcommand\im{\mathop{\mathrm{Im}}\nolimits}
+\renewcommand\hom[2]{\mathop{\mathrm{Hom}}\nolimits\pars{#1, #2}}
+\newcommand\sgn{\mathop{\mathrm{sgn}}\nolimits}
+\newcommand\trans[1]{#1^{\mathrm{T}}}
+
+\newcommand\existsunique{\mathop{\exists\!!}}
+
+% https://tex.stackexchange.com/a/520268
+\newenvironment{system}{\begin{cases}}{\end{cases}}
+\NewDocumentEnvironment{LabeledSystem}{O{}}{%
+    \begin{NiceArray}{@{}r<{\colon} @{\;\;} \{ >{\displaystyle}l #1 @{}}}{%
+    \end{NiceArray}}
+
+\newcommand\hquad{\hspace{0.5em}}
+
+% siunitx
+\usepackage{siunitx}
+\sisetup{per-mode=symbol, exponent-product=\cdot, inter-unit-product=\cdot}
+
+% text commands
+\usepackage{emoji}
+\setemojifont{Twemoji Mozilla}
+\NewDocumentCommand\sparkle{m}{\emoji{sparkles}#1\emoji{sparkles}}
+
+% colors
+\definecolor{darkgreen}{rgb}{0.0, 0.5, 0.0}
+\definecolor{chromeyellow}{rgb}{1.0, 0.65, 0.0}
+\definecolor{aquamarine}{rgb}{0.5, 1.0, 0.83}
+\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
+\definecolor{bostonuniversityred}{rgb}{0.8, 0.0, 0.0}
+\definecolor{brightgreen}{rgb}{0.4, 1.0, 0.0}
+\definecolor{burgundy}{rgb}{0.5, 0.0, 0.13}
+\definecolor{cadmiumred}{rgb}{0.89, 0.0, 0.13}
+\definecolor{cadmiumgreen}{rgb}{0.0, 0.42, 0.24}
+\definecolor{cadmiumorange}{rgb}{0.93, 0.53, 0.18}
+\definecolor{cadmiumyellow}{rgb}{1.0, 0.96, 0.0}
+\definecolor{darkturquoise}{rgb}{0.0, 0.81, 0.82}
+\definecolor{darkviolet}{rgb}{0.58, 0.0, 0.83}
+
+\colorlet{shade}{gray!40}
+
+% quotations
+\usepackage{csquotes}
+\renewcommand\mkcitation[1]{\par\hfill #1}
+\renewcommand\mkccitation[1]{\par\hfill #1}
+\SetBlockEnvironment{quotation}
+
+% bibliography
+\NewDocumentCommand\SetupBibliography{m}{
+    \usepackage[backend=biber, style=numeric]{biblatex}
+    \addbibresource{#1}
+}
+
+% footnotes
+\renewcommand\thefootnote{\Roman{footnote}}
+
+% header
+\usepackage{titling,fancyhdr}
+% \pagestyle{fancy}
+% \DeclareDocumentCommand\chaptermark[1]{\markboth{[\thechapter]\ #1}{}}
+% \fancyhead{}
+% \fancyfoot{}
+% \fancyhead[LO,RE]{\bfseries\thepage}
+% \fancyhead[C]{\thetitle}
+% \fancyhead[LE,RO]{\bfseries\today}
+% \fancyfoot[C]{\theauthor}
+% \fancyfoot[RO,LE]{\bfseries\leftmark}
+% \fancyfoot[C]{\bfseries:)}
+% \fancypagestyle{plain}{}
+
+% load package bookmark & hyperref last as per the instructions
+\usepackage{bookmark}
+\hypersetup{
+    colorlinks,
+    linkcolor={burgundy},
+    citecolor={cadmiumgreen},
+    urlcolor={darkturquoise}
+}
+
+\AtBeginDocument{%
+    % display skip is reset upon \begin{document} so we must set them this way
+    \addtolength\belowdisplayshortskip{-3pt}%
+    \addtolength\abovedisplayshortskip{-3pt}%
+    \addtolength\abovedisplayskip{-5pt}%
+    \addtolength\belowdisplayskip{-5pt}%
+    \addtolength\belowcaptionskip{3pt}%
+}
+
+% subfigure with automatic width
+% adapted from https://www.reddit.com/r/LaTeX/comments/42suro/automatically_adjusting_width_in_subfigure/czdsgh8/
+\newlength\figwidth
+\newsavebox\figbox
+\NewDocumentCommand\AutoSubcaption{s O{0pt} m m}{%
+    \savebox{\figbox}{#4}%
+    \settowidth{\figwidth}{\usebox{\figbox}}%
+    \addtolength{\figwidth}{#2}%
+    \IfBooleanTF#1%
+        {\begin{subtable}[t]{\figwidth}\centering\caption{#3}\usebox{\figbox}\end{subtable}}%
+        {\begin{subfigure}[t]{\figwidth}\centering\caption{#3}\usebox{\figbox}\end{subfigure}}%
+}
+
+% show date of lecture in margin
+\usepackage{marginnote}
+\renewcommand*\marginfont{\footnotesize\color{darkviolet}}
+\NewDocumentCommand\lecturemark{m}{\protect\marginnote{#1}}
+
+% add a non-numbered chapter with correct toc handling
+\NewDocumentCommand\UnnumberedChapter{m}{%
+\chapter*{#1}%
+\markboth{#1}{#1}%
+\addcontentsline{toc}{chapter}{#1}%
+}
+
+\NewDocumentCommand\SetupMinted{}{
+    \usepackage{minted}
+    \setminted{autogobble,breaklines,breakbytokenanywhere}
+    \usemintedstyle{molokai} % requires pip package pygments-molokai
+    \definecolor{codeBg}{HTML}{1c1c1e}
+    \setminted{bgcolor=codeBg}
+}

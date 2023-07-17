@@ -1,0 +1,18 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+cp}{\PYGZsh{}include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}Servo.h\PYGZgt{}}
+
+\PYG{c+cp}{\PYGZsh{}include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}Arduino.h\PYGZdq{}}
+
+\PYG{k}{class}\PYG{+w}{ }\PYG{n+nc}{AsseServo}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{   }\PYG{k}{private}\PYG{o}{:}
+\PYG{+w}{    }\PYG{n}{Servo}\PYG{+w}{ }\PYG{n}{servo}\PYG{p}{;}
+
+\PYG{+w}{   }\PYG{k}{public}\PYG{o}{:}
+\PYG{+w}{    }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{desiredPosition}\PYG{p}{;}
+
+\PYG{+w}{    }\PYG{n}{AsseServo}\PYG{p}{(}\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{pin}\PYG{p}{);}
+
+\PYG{+w}{    }\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{tick}\PYG{p}{();}
+\PYG{+w}{    }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{wait}\PYG{p}{();}
+\PYG{p}{\PYGZcb{};}
+\end{Verbatim}

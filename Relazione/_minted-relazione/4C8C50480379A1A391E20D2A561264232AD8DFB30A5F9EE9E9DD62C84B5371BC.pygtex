@@ -1,0 +1,109 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+cp}{\PYGZsh{}include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}AsseServo.hpp\PYGZdq{}}
+\PYG{c+cp}{\PYGZsh{}include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}AsseX.hpp\PYGZdq{}}
+
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{ELECTROMAGNET\PYGZus{}PIN}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{13}\PYG{p}{;}
+
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{PHOTO\PYGZus{}THRESHOLD}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{30}\PYG{p}{;}
+
+\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{Photoresistor}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{pin}\PYG{p}{;}
+
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{x}\PYG{p}{;}
+\PYG{+w}{    }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{y}\PYG{p}{;}
+
+\PYG{+w}{    }\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{containerDetected}\PYG{p}{()}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{analogRead}\PYG{p}{(}\PYG{n}{pin}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZlt{}=}
+\PYG{+w}{               }\PYG{n}{PHOTO\PYGZus{}THRESHOLD}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{};}
+
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{size\PYGZus{}t}\PYG{+w}{ }\PYG{n}{BOAT\PYGZus{}PHOTORESISTORS}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{size\PYGZus{}t}\PYG{+w}{ }\PYG{n}{PORT\PYGZus{}PHOTORESISTORS\PYGZus{}FOR\PYGZus{}UNLOADING}\PYG{+w}{ }\PYG{o}{=}
+\PYG{+w}{    }\PYG{l+m+mi}{1}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{size\PYGZus{}t}\PYG{+w}{ }\PYG{n}{PORT\PYGZus{}PHOTORESISTORS\PYGZus{}FOR\PYGZus{}LOADING}\PYG{+w}{ }\PYG{o}{=}
+\PYG{+w}{    }\PYG{l+m+mi}{1}\PYG{p}{;}
+
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{FIRST\PYGZus{}ZONE\PYGZus{}Y}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{SECOND\PYGZus{}ZONE\PYGZus{}Y}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{120}\PYG{p}{;}
+
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{RETRACTION\PYGZus{}Z}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{80}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{uint8\PYGZus{}t}\PYG{+w}{ }\PYG{n}{EXTENSION\PYGZus{}Z}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{175}\PYG{p}{;}
+
+\PYG{n}{Photoresistor}\PYG{+w}{ }\PYG{n}{boatSrc}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{n}{A1}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{10}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{FIRST\PYGZus{}ZONE\PYGZus{}Y}\PYG{p}{\PYGZcb{};}
+\PYG{n}{Photoresistor}\PYG{+w}{ }\PYG{n}{boatDst}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{n}{A0}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{10}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{SECOND\PYGZus{}ZONE\PYGZus{}Y}\PYG{p}{\PYGZcb{};}
+
+\PYG{n}{Photoresistor}\PYG{+w}{ }\PYG{n}{portDst}
+\PYG{+w}{        }\PYG{p}{\PYGZob{}}\PYG{n}{A3}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{15.4}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{FIRST\PYGZus{}ZONE\PYGZus{}Y}
+\PYG{p}{\PYGZcb{};}
+\PYG{n}{Photoresistor}\PYG{+w}{ }\PYG{n}{portSrc}
+\PYG{+w}{        }\PYG{p}{\PYGZob{}}\PYG{n}{A2}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{15.4}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{SECOND\PYGZus{}ZONE\PYGZus{}Y}\PYG{p}{\PYGZcb{};}
+
+
+\PYG{n}{byte}\PYG{+w}{ }\PYG{n}{mac}\PYG{p}{[]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{l+m+mh}{0xE0}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mh}{0xDC}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mh}{0xA0}\PYG{p}{,}
+\PYG{+w}{              }\PYG{l+m+mh}{0x14}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mh}{0x07}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mh}{0x80}\PYG{p}{\PYGZcb{};}
+\PYG{n}{byte}\PYG{+w}{ }\PYG{n}{ip}\PYG{p}{[]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{192}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{168}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{151}\PYG{p}{\PYGZcb{};}
+
+\PYG{n}{AsseServo}\PYG{+w}{ }\PYG{n}{y}\PYG{p}{;}
+
+\PYG{n}{AsseServo}\PYG{+w}{ }\PYG{n}{z}\PYG{p}{;}
+
+\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n}{electromagnetEnabled}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{false}\PYG{p}{;}
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{setup}\PYG{p}{()}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{(}\PYG{l+m+mi}{9600}\PYG{p}{);}
+\PYG{+w}{    }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{!}\PYG{n}{Serial}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}\PYGZcb{};}
+
+\PYG{+w}{    }\PYG{n}{pinMode}\PYG{p}{(}\PYG{n}{XAxis}\PYG{o}{::}\PYG{n}{SPEED\PYGZus{}PIN}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{OUTPUT}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{pinMode}\PYG{p}{(}\PYG{n}{XAxis}\PYG{o}{::}\PYG{n}{D1\PYGZus{}PIN}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{OUTPUT}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{pinMode}\PYG{p}{(}\PYG{n}{XAxis}\PYG{o}{::}\PYG{n}{D2\PYGZus{}PIN}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{OUTPUT}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{pinMode}\PYG{p}{(}\PYG{n}{ELECTROMAGNET\PYGZus{}PIN}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{OUTPUT}\PYG{p}{);}
+
+\PYG{+w}{    }\PYG{n}{y}\PYG{p}{.}\PYG{n}{attach}\PYG{p}{(}\PYG{l+m+mi}{5}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{FIRST\PYGZus{}ZONE\PYGZus{}Y}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{z}\PYG{p}{.}\PYG{n}{attach}\PYG{p}{(}\PYG{l+m+mi}{6}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{RETRACTION\PYGZus{}Z}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}CALIBRATION COMPLETE\PYGZdq{}}\PYG{p}{);}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{setElectromagnet}\PYG{p}{(}\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n}{enabled}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+
+\PYG{+w}{    }\PYG{n}{electromagnetEnabled}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{enabled}\PYG{p}{;}
+\PYG{+w}{    }\PYG{n}{digitalWrite}\PYG{p}{(}\PYG{n}{ELECTROMAGNET\PYGZus{}PIN}\PYG{p}{,}
+\PYG{+w}{                 }\PYG{n}{enabled}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{n}{HIGH}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{n}{LOW}\PYG{p}{);}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{moveContainer}\PYG{p}{(}\PYG{n}{Photoresistor}\PYG{+w}{ }\PYG{n}{src}\PYG{p}{,}
+\PYG{+w}{                   }\PYG{n}{Photoresistor}\PYG{+w}{ }\PYG{n}{dst}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{  }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{print}\PYG{p}{(}\PYG{n}{src}\PYG{p}{.}\PYG{n}{x}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{print}\PYG{p}{(}\PYG{l+s+sc}{\PYGZsq{} \PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{print}\PYG{p}{(}\PYG{n}{src}\PYG{p}{.}\PYG{n}{y}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{print}\PYG{p}{(}\PYG{l+s}{\PYGZdq{} =\PYGZgt{} \PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{print}\PYG{p}{(}\PYG{n}{dst}\PYG{p}{.}\PYG{n}{x}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{print}\PYG{p}{(}\PYG{l+s+sc}{\PYGZsq{} \PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{println}\PYG{p}{(}\PYG{n}{dst}\PYG{p}{.}\PYG{n}{y}\PYG{p}{);}
+
+\PYG{+w}{    }\PYG{n}{XAxis}\PYG{o}{::}\PYG{n}{moveTo}\PYG{p}{(}\PYG{n}{src}\PYG{p}{.}\PYG{n}{x}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}got into x\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{y}\PYG{p}{.}\PYG{n}{moveTo}\PYG{p}{(}\PYG{n}{src}\PYG{p}{.}\PYG{n}{y}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}got into y;\PYGZdq{}}\PYG{p}{);}
+
+\PYG{+w}{    }\PYG{n}{z}\PYG{p}{.}\PYG{n}{moveTo}\PYG{p}{(}\PYG{n}{EXTENSION\PYGZus{}Z}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}extended z\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{setElectromagnet}\PYG{p}{(}\PYG{n+nb}{true}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{z}\PYG{p}{.}\PYG{n}{moveTo}\PYG{p}{(}\PYG{n}{RETRACTION\PYGZus{}Z}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{Serial}\PYG{p}{.}\PYG{n}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}retracted z\PYGZdq{}}\PYG{p}{);}
+
+\PYG{+w}{    }\PYG{n}{XAxis}\PYG{o}{::}\PYG{n}{moveTo}\PYG{p}{(}\PYG{n}{dst}\PYG{p}{.}\PYG{n}{x}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{y}\PYG{p}{.}\PYG{n}{moveTo}\PYG{p}{(}\PYG{n}{dst}\PYG{p}{.}\PYG{n}{y}\PYG{p}{);}
+
+\PYG{+w}{    }\PYG{n}{z}\PYG{p}{.}\PYG{n}{moveTo}\PYG{p}{(}\PYG{n}{EXTENSION\PYGZus{}Z}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{setElectromagnet}\PYG{p}{(}\PYG{n+nb}{false}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n}{z}\PYG{p}{.}\PYG{n}{moveTo}\PYG{p}{(}\PYG{n}{RETRACTION\PYGZus{}Z}\PYG{p}{);}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{loop}\PYG{p}{()}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+
+\PYG{+w}{    }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{portSrc}\PYG{p}{.}\PYG{n}{containerDetected}\PYG{p}{()}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{o}{!}\PYG{n}{boatDst}\PYG{p}{.}\PYG{n}{containerDetected}\PYG{p}{())}\PYG{+w}{ }\PYG{n}{moveContainer}\PYG{p}{(}\PYG{n}{portSrc}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{boatDst}\PYG{p}{);}
+\PYG{+w}{    }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{boatSrc}\PYG{p}{.}\PYG{n}{containerDetected}\PYG{p}{()}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{o}{!}\PYG{n}{portDst}\PYG{p}{.}\PYG{n}{containerDetected}\PYG{p}{())}\PYG{+w}{ }\PYG{n}{moveContainer}\PYG{p}{(}\PYG{n}{boatSrc}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{portDst}\PYG{p}{);}
+
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}
