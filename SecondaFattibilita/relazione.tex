@@ -1,0 +1,81 @@
+\input{prelude}
+
+\SetupMinted{}
+\SetupBibliography{relazione.bib}
+\pagestyle{empty}
+
+\begin{document}
+
+\twocolumn[{\begin{figure}[H]
+    \setlength{\linewidth}{\textwidth}
+    \setlength{\hsize}{\textwidth}
+    \centering
+    \begin{NiceTabular}{rl}
+            \Block{3-1}{\includegraphics[height=20ex]{logo}} & {\Large\bfseries Seconda relazione di fattibilità: Carroponte smart}                                        \\
+                                                             & Giuseppe Damiata, Vincenzo Mazza, Nicolò Spingola \\
+                                                             & Università degli studi di Palermo, Dipartimento di Ingegneria, Hangar\_9
+                                                             \\ \\ \\ % extra rows for logo spacing
+    \end{NiceTabular}
+\end{figure}}]
+
+\begin{abstract}
+    Nella presente relazione di fattibilità si propone un progetto per un carroponte smart, capace
+    di muovere automaticamente dei container all'interno di un porto. Per la realizzazione di tale
+    progetto si intende utilizzare in combinazione un PLC Zelio Smart Relay SR3B261BD ed un Arduino
+    MEGA, al fine di dimostrare la capacità di sistemi ad-hoc di essere integrati a posteriori in
+    una rete robusta di automazione industriale.
+\end{abstract}
+
+\section{Introduzione}
+
+Come anticipato nell'abstract, il progetto che si propone ha come obiettivo la realizzazione di un
+carroponte smart, ovvero un carroponte dotato di un sistema di controllo che gli permetta di
+realizzare in totale autonomia carichi e scarichi di container da una nave merci. \cite{ren2021design,gupta2004simplified}
+
+In particolare, il sistema è realizzato mediante la sinergia di due dispositivi: Un PLC Zelio
+SR3B261BD ed un Arduino MEGA. Tale scelta è stata fatta per dimostrare la capacità di sistemi
+precedentemente realizzati ad-hoc, fini ad un solo controllo automatico locale, di essere integrati
+grazie al protocollo Modbus nella vasta rete di automazione industriale di un azienda di trasporti,
+grazie a sistemi SCADA (\emph{Supervisory Control and Data Acquisition}). \cite{li2015data,arm2015real}
+
+\section{Descrizione del sistema}
+
+Il sistema consiste delle seguenti parti.
+\begin{itemize}
+    \item Un microcontrollore Arduino MEGA, che si interfaccia con un apposito connettore al PLC
+        Zelio SR3B261BD, e che è in grado di controllare i servomotori del carroponte, abilitare e
+        disabilitare l'elettromagnete, e leggere i fotoresistori che indicano la presenza o assenza
+        di container da spostare.
+    \item Un PLC Zelio SR3B261BD, che si interfaccia appunto con l'Arduino MEGA, e che è in grado di
+        monitorare i dati ad esso forniti dal microcontrollore e manipolare ogni aspetto di
+        quest'ultimo, al fine di consentire il telecontrollo e l'acquisizione di dati.
+    \item Tre servomotori che permettono di muovere il carroponte lungo le tre direzioni
+        degli assi cartesiani.
+    \item Sei fotoresistenze corrispondenti alle sei aree di carico/scarico.
+    \item Un elettromagnete, controllato in corrente continua, che permette di sollevare e trasportare i container.
+\end{itemize}
+
+Il PLC Zelio viene dotato di un modulo di espansione SR3NET01BD, che permette di interfacciarsi con
+il sistema SCADA mediante il protocollo Modbus TCP/IP. Il sistema SCADA consiste poi in due
+programmi, uno realizzato in Vijeo Citect per utilizzo desktop e l'altro in TeslaSCADA per utilizzo
+mobile.
+
+\begin{figure*}[htbp]\centering
+    \caption{Lo schema elettrico del sistema, realizzato in KiCAD.}
+    \includegraphics[width=\linewidth]{schema-elettrico.pdf}
+\end{figure*}
+
+\section{Benefici del sistema}
+
+In conclusione, il sistema proposto permette di aumentare l'efficienza nonché la sicurezza di un
+tradizionale carroponte, o addirittura anche di uno già automatizzato ma privo di SCADA, senza
+cambiamenti troppo costosi all'architettura di un sistema già esistente. Vengono ridotti
+notevolmente i tempi di fermo macchina, nonché le possibilità di errori umani o pericolose cadute
+dovute ad arrampicamenti sul carroponte.
+
+\enlargethispage*{4\baselineskip}
+
+\printbibliography
+
+\end{document}
+% vim: ft=tex
