@@ -1,6 +1,5 @@
-#include <Servo.h>
-
 #include "Arduino.h"
+#include "Servo.h"
 
 class ServoAxis {
   private:

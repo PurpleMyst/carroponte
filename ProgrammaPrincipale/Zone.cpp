@@ -1,9 +1,6 @@
 #include "Zone.hpp"
 
-bool containerDetected(uint8_t pin) {  }
-
-Zone::Zone(uint8_t pin, int16_t x, int16_t y) : photoresistorPin(pin), x(x), y(y), state(EMPTY) {
-}
+Zone::Zone(uint8_t pin, int16_t x, int16_t y) : photoresistorPin(pin), x(x), y(y), state(EMPTY) {}
 
 bool Zone::containerDetected() { return analogRead(photoresistorPin) <= PHOTO_THRESHOLD; }
 

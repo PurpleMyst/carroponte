@@ -46,7 +46,7 @@ void setup() {
     Serial.println("SETUP COMPLETE");
 }
 
-void moveContainer(Zone src, Zone dst) {
+void moveContainer(Zone& src, Zone& dst) {
     // Print out what we're going to do.
     Serial.print("Moving container from (");
     Serial.print(src.x);
@@ -89,13 +89,15 @@ void moveContainer(Zone src, Zone dst) {
 }
 
 template <size_t N, size_t M> void moveBetweenZones(Zone (&sources)[N], Zone (&destinations)[M]) {
-    for (Zone src : sources) {
+    for (Zone &src : sources) {
         src.updateState();
-        if (src.state != HAS_CONTAINER_TO_MOVE) continue;
+        if (src.state != HAS_CONTAINER_TO_MOVE)
+            continue;
 
-        for (Zone dst : sources) {
+        for (Zone &dst : sources) {
             dst.updateState();
-            if (dst.state != EMPTY) continue;
+            if (dst.state != EMPTY)
+                continue;
 
             moveContainer(src, dst);
             break;
