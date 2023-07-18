@@ -1,105 +1,108 @@
-#include "AsseServo.hpp"
-#include "AsseX.hpp"
+#include "ServoAxis.hpp"
 
 const uint8_t ELECTROMAGNET_PIN = 13;
 
-const uint8_t PHOTO_THRESHOLD = 30;
+const int16_t FIRST_ZONE_Y = 0;
+const int16_t SECOND_ZONE_Y = 120;
 
-struct Photoresistor {
-    uint8_t pin;
+const int16_t RETRACTION_Z = 80;
+const int16_t EXTENSION_Z = 175;
 
-    double x;
-    uint8_t y;
+const size_t BOAT_ZONES = 2;
+const size_t PORT_ZONES = 4;
 
-    bool containerDetected() {
-        return analogRead(pin) <=
-               PHOTO_THRESHOLD;
-    }
+Zone boatZones[BOAT_ZONES] = {
+    {A0, 0, 0},
+    {A1, 0, 0},
+};
+Zone portZones[PORT_ZONES] = {
+    {A2, 0, 0},
+    {A3, 0, 0},
+    {A4, 0, 0},
+    {A5, 0, 0},
 };
 
-const size_t BOAT_PHOTORESISTORS = 2;
-const size_t PORT_PHOTORESISTORS_FOR_UNLOADING =
-    1;
-const size_t PORT_PHOTORESISTORS_FOR_LOADING =
-    1;
-
-const int FIRST_ZONE_Y = 0;
-const int SECOND_ZONE_Y = 120;
-
-const uint8_t RETRACTION_Z = 80;
-const uint8_t EXTENSION_Z = 175;
-
-Photoresistor boatSrc{A1, 10, FIRST_ZONE_Y};
-Photoresistor boatDst{A0, 10, SECOND_ZONE_Y};
-
-Photoresistor portDst{A3, 15.4, FIRST_ZONE_Y};
-Photoresistor portSrc{A2, 15.4, SECOND_ZONE_Y};
-
-byte mac[] = {0xE0, 0xDC, 0xA0,
-              0x14, 0x07, 0x80};
-byte ip[] = {192, 168, 1, 151};
-
-AsseServo y;
-
-AsseServo z;
+ServoAxis x, y, z;
 
 bool electromagnetEnabled = false;
+
+void setElectromagnet(bool enabled) {
+    electromagnetEnabled = enabled;
+    digitalWrite(ELECTROMAGNET_PIN, enabled ? HIGH : LOW);
+}
 
 void setup() {
     Serial.begin(9600);
     while (!Serial) {
+        delay(1);
     };
 
-    pinMode(XAxis::SPEED_PIN, OUTPUT);
-    pinMode(XAxis::D1_PIN, OUTPUT);
-    pinMode(XAxis::D2_PIN, OUTPUT);
     pinMode(ELECTROMAGNET_PIN, OUTPUT);
 
-    y.attach(5, FIRST_ZONE_Y);
-    z.attach(6, RETRACTION_Z);
-    Serial.println("CALIBRATION COMPLETE");
+    x.attach(3, 0);
+    y.attach(4, FIRST_ZONE_Y);
+    z.attach(5, RETRACTION_Z);
+    Serial.println("SETUP COMPLETE");
 }
 
-void setElectromagnet(bool enabled) {
-    electromagnetEnabled = enabled;
-    digitalWrite(ELECTROMAGNET_PIN,
-                 enabled ? HIGH : LOW);
-}
-
-void moveContainer(Photoresistor src,
-                   Photoresistor dst) {
+void moveContainer(Zone src, Zone dst) {
+    // Print out what we're going to do.
+    Serial.print("Moving container from (");
     Serial.print(src.x);
-    Serial.print(' ');
+    Serial.print(", ");
     Serial.print(src.y);
-    Serial.print(" => ");
+    Serial.print(") to (");
     Serial.print(dst.x);
-    Serial.print(' ');
-    Serial.println(dst.y);
+    Serial.print(", ");
+    Serial.print(dst.y);
+    Serial.println(")!");
 
-    XAxis::moveTo(src.x);
-    Serial.println("got into x");
+    // Execute move sequence.
+    x.moveTo(src.x);
     y.moveTo(src.y);
-    Serial.println("got into y;");
 
     z.moveTo(EXTENSION_Z);
-    Serial.println("extended z");
     setElectromagnet(true);
     z.moveTo(RETRACTION_Z);
-    Serial.println("retracted z");
 
-    XAxis::moveTo(dst.x);
+    x.moveTo(dst.x);
     y.moveTo(dst.y);
 
     z.moveTo(EXTENSION_Z);
     setElectromagnet(false);
     z.moveTo(RETRACTION_Z);
+
+    // Check if movement actually happened, and if so update the states.
+    if (!src.containerDetected()) {
+        Serial.println("Container not detected at source zone, setting state to EMPTY.");
+        src.state = EMPTY;
+    } else {
+        Serial.println("Container detected at source zone, something must've gone wrong!");
+    }
+    if (dst.containerDetected()) {
+        Serial.println("Container detected at destination zone, setting state to MOVED_TO.");
+        dst.state = MOVED_TO;
+    } else {
+        Serial.println("Container not detected at destination zone, something must've gone wrong!");
+    }
+}
+
+template <size_t N, size_t M> void moveBetweenZones(Zone (&sources)[N], Zone (&destinations)[M]) {
+    for (Zone src : sources) {
+        src.updateState();
+        if (src.state != HAS_CONTAINER_TO_MOVE) continue;
+
+        for (Zone dst : sources) {
+            dst.updateState();
+            if (dst.state != EMPTY) continue;
+
+            moveContainer(src, dst);
+            break;
+        }
+    }
 }
 
 void loop() {
-    if (portSrc.containerDetected() &&
-        !boatDst.containerDetected())
-        moveContainer(portSrc, boatDst);
-    if (boatSrc.containerDetected() &&
-        !portDst.containerDetected())
-        moveContainer(boatSrc, portDst);
+    moveBetweenZones(boatZones, portZones);
+    moveBetweenZones(portZones, boatZones);
 }

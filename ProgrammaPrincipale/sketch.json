@@ -1,1 +1,1 @@
-{ "cpu": { "fqbn": "arduino:avr:uno", "name": "Arduino Uno", "port": "COM6" } }
+{ "cpu": { "fqbn": "arduino:avr:mega", "name": "Arduino MEGA", "port": "COM6" } }

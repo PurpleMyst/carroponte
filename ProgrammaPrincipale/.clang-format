@@ -1,6 +1,6 @@
 ---
-BasedOnStyle: Google
+BasedOnStyle: LLVM
 IndentWidth: 4
-ColumnLimit: 48
+ColumnLimit: 100
 ReflowComments: true
 ---
