@@ -1,4 +1,5 @@
 #include "ServoAxis.hpp"
+#include "Zone.hpp"
 
 const uint8_t ELECTROMAGNET_PIN = 13;
 

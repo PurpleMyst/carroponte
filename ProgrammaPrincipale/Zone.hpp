@@ -20,7 +20,7 @@ struct Zone {
     enum ZoneState state;
     int16_t x, y;
 
-    Zone(uint8_t, double, int16_t);
+    Zone(uint8_t, int16_t, int16_t);
 
     bool containerDetected();
     void updateState();
