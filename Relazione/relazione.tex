@@ -19,84 +19,78 @@
 
 \begin{abstract}
     Nella presente relazione si descrive il progetto di un sistema di controllo per un carroponte
-    completamente automatizzato mediante l'utilizzo di un PLC Simatic IOT2020, capace di caricare e
-    scaricare container da una nave merce. Inoltre il sistema è dotato di un collegamento SCADA che
-    permette il monitoraggio remoto ed il telecontrollo ai fini di migliorare l'efficienza e la
-    sicurezza. \cite{arm2015real}
+    completamente automatizzato mediante l'utilizzo sinergico di un PLC Zelio Logic SR3B261BD ed
+    un Arduino MEGA. Esso è capace di caricare e scaricare container da una nave merce, con
+    l'ausilio di due zone di carico poste sulla nave e due zone di carico poste sul porto. Il
+    sistema presenta inoltre la possibilità di essere telecontrollato remotamente mediante il
+    protocollo Modbus, grazie al sistema SCADA.
+    \cite{arm2015real}
 \end{abstract}
 
-\section{Introduzione}
+\section{Introduzione e scopo del progetto}
 
 I carriponte sono macchine utilizzate per il sollevamento e lo spostamento di carichi pesanti.
 Trovano larga applicazione in innumerevoli campi, tra cui le navi merce, cantieri edili e magazzini,
-pertanto sono un ottimo esempio di possibilità applicativa dell'automazione industriale. \cite{ren2021design,li2015data}
+pertanto sono un ottimo esempio di possibilità applicativa dell'automazione industriale.
+\cite{ren2021design,li2015data}
 
 La loro automatizzazione permette di ridurre di gran lunga i tempi di fermo macchina, ed inoltre
-aumenta notevolmente la sicurezza in quanto toglie dall'equazione gli errori umani. \cite{gupta2004simplified}
+aumenta notevolmente la sicurezza in quanto toglie dall'equazione gli errori umani.
+\cite{gupta2004simplified}
 
-Nella trattazione successiva andremmo a delineare il nostro progetto di prototipo di sistema di
-controllo per un carroponte portuale.
+Nella trattazione successiva andremmo a delineare il nostro prototipo di sistema di
+controllo per un carroponte portuale, basato sull'utilizzo di un PLC Zelio Logic SR3B261BD per
+l'automatizzazione progressiva di un sistema precedentemente ad-hoc. Il basso costo del sopracitato
+dispositivo permette ad un impianto già esistente di mantenere le sue funzioni di base, mentre il
+PLC svolge le sue mansioni di telecontrollo e monitoraggio.
 
-\section{Scopo del progetto}
-
-Il progetto consiste sostanzialmente nella realizzazione di un prototipo, mediante stampa 3D, di un
-porto con annessa una nave mercantile, un carroponte e un sistema di controllo.
-
-Le dimensioni complessive sono $\qty{25}{\cm} \times \qty{16}{\cm} \times \qty{24}{\cm}$.
+% Le dimensioni complessive sono $\qty{25}{\cm} \times \qty{16}{\cm} \times \qty{24}{\cm}$.
 
 \section{Design e componenti}
 
 Il modello per la stampa 3D è stato realizzato mediante il software \emph{AutoDesk Fusion 360} e
 stampato su una coppia di stampanti, rispettivamente una \emph{Eryone Thinker SE} ed una
 \emph{Wunhao GR2}. Il modello è stato realizzato in modo da poter essere stampato in più parti, date
-le limitazioni di dimensione dei piatti di stampa, e poi assemblato mediante incastri e colla.
+le limitazioni di dimensione dei piatti di stampa, e poi assemblato mediante una vasta gamma di
+accoppiamenti, tra cui incastri, colla e viti.
 
 Sia sulla nave che sul porto sono state realizzate apposite tasche per alloggiare i container,
 all'interno delle quali sono state inserite delle fotoresistenze per la rilevazione della presenza o
 assenza di quest'ultimi.
 
-Il porto presenta poi delle guide all'interno delle quali scorre il carroponte, mediante un motore
-DC ed un'apposita cinghia dentata (tale asse viene denominata asse X). Sul carroponte vi sono due
-cremagliere, veicolate da due motori servo, rispettivamente denominate Y per l'asse propria del
-carroponte e Z per l'asse di sollevamento.
+Il porto presenta poi delle guide all'interno delle quali scorre il carroponte, mediante un
+servomotore, su un asse detta X. Sul carroponte vi sono due cremagliere, veicolate anch'esse da due
+motori servo, rispettivamente denominate Y per l'asse propria del carroponte e Z per l'asse di
+sollevamento.
 
 L'asse Z presenta sulla sua estremità inferiore un elettromagnete controllabile mediante corrente
 continua responsabile per l'aggancio e lo sgancio dei container, i quali sono dotati di un'apposita
-parte magnetica.
+parte magnetica per il sollevamento.
 
 \section{Sistema di controllo}
 
-Il sistema di controllo consiste in un PLC Simatic IOT2020, il quale è dotato di un processore Intel
-e supporta pertanto l'esecuzione di Sketch Arduino. Il PLC è dotato di un'interfaccia Ethernet,
-mediante la quale è possibile il collegamento ad un PC per il monitoraggio e il telecontrollo.
+Il sistema di controllo è, come anticipato, di duplice natura: Esso consiste in un PLC Zelio Logic
+SR3B261BD ed Arduino MEGA della Robotdyn. Il primo implementa la logica di telecontrollo e
+telemonitoraggio, comunicando con lo SCADA mediante il protocollo Modbus; il secondo implementa il
+controllo locale dei servomotori e dei fotoresistori.
 
 L'algoritmo di controllo automatico controlla ciclicamente la presenza di container da spostare, ed
-al momento della rilevazione effettua lo spostamento senza intervento umano. 
-
-L'asse X viene controllata mediante un semplice algoritmo di controllo a ciclo chiuso, che si basa
-sulla lettura della posizione corrente con un trasduttore ultrasonico e conseguente applicazione di
-un momento motore proporzionale all'errore. Vi è inoltre un sistema anti-bloccaggio che, nel caso di
-interruzione del moto, incrementa temporaneamente il momento applicato per svincolare il carroponte.
-
-Le restanti assi, grazie al loro utilizzo di servomotori che integrano un encoder, sono controllate
-semplicemente tramite PWM.
-
-Segue il programma principale:
-\inputminted{cpp}{../ProgrammaPrincipale/ProgrammaPrincipale.ino}
-
-Seguono header e file principale per il controllo dell'asse X:
-\inputminted{cpp}{../ProgrammaPrincipale/AsseX.hpp}
-\inputminted{cpp}{../ProgrammaPrincipale/AsseX.cpp}
-
-Seguono header e file principale per il controllo degli assi con servo:
-\inputminted{cpp}{../ProgrammaPrincipale/AsseServo.hpp}
-\inputminted{cpp}{../ProgrammaPrincipale/AsseServo.cpp}
-
-\begin{figure*}[htbp]\centering
-    \includegraphics[width=\linewidth]{schema-elettrico}
-    \caption{Lo schema elettrico.}
-\end{figure*}
+al momento della rilevazione effettua lo spostamento senza intervento umano. Le zone sono
+dinamicamente trattate come zone di carico e di scarico, cioè il carroponte è capace di rilevare
+carichi posti nelle zone da operatori (che sono quindi da spostare) e carichi posti dal carroponte
+stesso (che sono quindi in attesa di un operatore che li rimuova).
 
 \printbibliography
+
+\tcbinputlisting{title={Lo sketch principale.}, minted language=cpp, listing file=../ProgrammaPrincipale/ProgrammaPrincipale.ino}
+
+\tcbinputlisting{title={Header per il controllo degli assi con servo.}, minted language=cpp, listing file=../ProgrammaPrincipale/ServoAxis.hpp}
+\tcbinputlisting{title={File principale per il controllo degli assi con servo.}, minted language=cpp, listing file=../ProgrammaPrincipale/ServoAxis.cpp}
+
+\tcbinputlisting{title={Header per la gestione delle zone.}, minted language=cpp, listing file=../ProgrammaPrincipale/Zone.hpp}
+\tcbinputlisting{title={File principale per la gestione delle zone.}, minted language=cpp, listing file=../ProgrammaPrincipale/Zone.cpp}
+
+% TODO: programma Zelio
+% TODO: schema elettrico in KiCAD
 
 \end{document}

@@ -301,9 +301,12 @@ point/.style={inner sep = 1pt, circle, fill},
 }
 
 \NewDocumentCommand\SetupMinted{}{
-    \usepackage{minted}
-    \setminted{autogobble,breaklines,breakbytokenanywhere}
-    \usemintedstyle{molokai} % requires pip package pygments-molokai
-    \definecolor{codeBg}{HTML}{1c1c1e}
-    \setminted{bgcolor=codeBg}
+    % \setminted{autogobble,breaklines,breakbytokenanywhere}
+    % \usemintedstyle{molokai} % requires pip package pygments-molokai
+    % \definecolor{codeBg}{HTML}{1c1c1e}
+    % \setminted{bgcolor=codeBg}
+    \usepackage{tcolorbox}
+    \tcbuselibrary{minted}
+    \tcbuselibrary{breakable}
+    \tcbset{listing only,breakable,fonttitle=\bfseries,float*=htbp,width=\textwidth}
 }
