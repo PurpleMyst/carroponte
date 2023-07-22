@@ -1,15 +1,18 @@
 #include "ServoAxis.hpp"
 
-void ServoAxis::attach(uint8_t pin, int16_t initialPosition) {
-    servo.attach(pin);
+void ServoAxis::attach(uint8_t servoPin, uint8_t commsPin, int16_t initialPosition)  {
+    this->commsPin = commsPin;
+    pinMode(commsPin, OUTPUT);
+      servo.attach(servoPin);
     moveTo(initialPosition);
 }
 
 void ServoAxis::moveTo(int16_t desiredPosition) {
-    int diff = servo.read() > desiredPosition ? -1 : 1;
-    for (int16_t i = servo.read(); i != desiredPosition; i += diff) {
-        servo.write(i);
-        delay(7);
+    int16_t delta = servo.read() > desiredPosition ? -1 : 1;
+    for (int16_t angle = servo.read(); angle != desiredPosition; angle += delta) {
+        analogWrite(commsPin, angle);
+        servo.write(angle);
+        delay(50);
     }
     delay(50);
 }
