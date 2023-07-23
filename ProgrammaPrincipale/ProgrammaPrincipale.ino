@@ -1,7 +1,7 @@
 #include "ServoAxis.hpp"
 #include "Zone.hpp"
 
-const uint8_t ELECTROMAGNET_PIN = 24;
+const uint8_t ELECTROMAGNET_PIN = 48;
 const uint8_t MANUAL_CONTROL_ENABLE_PIN = 50;
 const uint8_t DESIRED_ELECTROMAGNET_STATE_PIN = 51;
 const uint8_t DESIRED_X_PIN = A6;
@@ -23,12 +23,12 @@ const size_t BOAT_ZONES = 2;
 const size_t PORT_ZONES = 2;
 
 Zone boatZones[BOAT_ZONES] = {
-    {A15, BOAT_X, FIRST_ZONE_Y},
-    {A14, BOAT_X, SECOND_ZONE_Y},
+    {A15, BOAT_X, FIRST_ZONE_Y, 120},
+    {A14, BOAT_X, SECOND_ZONE_Y, 100},
 };
 Zone portZones[PORT_ZONES] = {
-    {A12, PORT_X, FIRST_ZONE_Y},
-    {A13, PORT_X, SECOND_ZONE_Y},
+    {A13, PORT_X, FIRST_ZONE_Y, 75},
+    {A12, PORT_X, SECOND_ZONE_Y, 70},
 };
 
 ServoAxis x, y, z;
