@@ -3,8 +3,8 @@
 
 #define USE_TIMER_2 true
 
-#include <TimerInterrupt.h>
 #include <ISR_Timer.h>
+#include <TimerInterrupt.h>
 
 const uint8_t ELECTROMAGNET_PIN = 48;
 const uint8_t MANUAL_CONTROL_ENABLE_PIN = 50;
@@ -27,11 +27,11 @@ const int16_t EXTENSION_Z = 105;
 const size_t BOAT_ZONES = 2;
 const size_t PORT_ZONES = 2;
 
- Zone boatZones[BOAT_ZONES] = {
+Zone boatZones[BOAT_ZONES] = {
     {A15, BOAT_X, FIRST_ZONE_Y},
     {A14, BOAT_X, SECOND_ZONE_Y},
 };
- Zone portZones[PORT_ZONES] = {
+Zone portZones[PORT_ZONES] = {
     {A13, PORT_X, FIRST_ZONE_Y},
     {A12, PORT_X, SECOND_ZONE_Y},
 };
@@ -46,7 +46,7 @@ void setElectromagnet(bool enabled) {
 }
 
 void measureZones() {
-    for (auto& zone : boatZones) {
+    for (auto &zone : boatZones) {
         zone.updateMeasurement();
     }
     for (auto &zone : portZones) {
@@ -71,7 +71,7 @@ void setup() {
     z.attach(5, 8, RETRACTION_Z);
 
     Serial.println("ATTACHING TIMER");
-  ITimer2.init();
+    ITimer2.init();
     if (ITimer2.attachInterruptInterval(UPDATE_INTERVAL, measureZones))
         Serial.println("TIMER ATTACHED");
     else {
@@ -81,7 +81,7 @@ void setup() {
     }
 
     Serial.print("SLEEPING TO CALIBRATE, FOR ");
-    Serial.print((int) LIGHT_CALIBRATION_TIME);
+    Serial.print((int)LIGHT_CALIBRATION_TIME);
     Serial.println(" MS");
     delay(LIGHT_CALIBRATION_TIME);
     for (auto &zone : boatZones) {
