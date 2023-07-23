@@ -1,6 +1,11 @@
 #include "ServoAxis.hpp"
 #include "Zone.hpp"
 
+#define USE_TIMER_2 true
+
+#include <TimerInterrupt.h>
+#include <ISR_Timer.h>
+
 const uint8_t ELECTROMAGNET_PIN = 48;
 const uint8_t MANUAL_CONTROL_ENABLE_PIN = 50;
 const uint8_t DESIRED_ELECTROMAGNET_STATE_PIN = 51;
@@ -22,13 +27,13 @@ const int16_t EXTENSION_Z = 105;
 const size_t BOAT_ZONES = 2;
 const size_t PORT_ZONES = 2;
 
-Zone boatZones[BOAT_ZONES] = {
-    {A15, BOAT_X, FIRST_ZONE_Y, 120},
-    {A14, BOAT_X, SECOND_ZONE_Y, 100},
+ Zone boatZones[BOAT_ZONES] = {
+    {A15, BOAT_X, FIRST_ZONE_Y},
+    {A14, BOAT_X, SECOND_ZONE_Y},
 };
-Zone portZones[PORT_ZONES] = {
-    {A13, PORT_X, FIRST_ZONE_Y, 75},
-    {A12, PORT_X, SECOND_ZONE_Y, 70},
+ Zone portZones[PORT_ZONES] = {
+    {A13, PORT_X, FIRST_ZONE_Y},
+    {A12, PORT_X, SECOND_ZONE_Y},
 };
 
 ServoAxis x, y, z;
@@ -38,6 +43,15 @@ bool electromagnetEnabled = false;
 void setElectromagnet(bool enabled) {
     electromagnetEnabled = enabled;
     digitalWrite(ELECTROMAGNET_PIN, enabled ? HIGH : LOW);
+}
+
+void measureZones() {
+    for (auto& zone : boatZones) {
+        zone.updateMeasurement();
+    }
+    for (auto &zone : portZones) {
+        zone.updateMeasurement();
+    }
 }
 
 void setup() {
@@ -51,9 +65,32 @@ void setup() {
     pinMode(DESIRED_ELECTROMAGNET_STATE_PIN, INPUT_PULLUP);
     pinMode(DESIRED_Z_PIN, INPUT_PULLUP);
 
-    x.attach(3, 6, 0);
+    Serial.println("HOMING AXES");
+    x.attach(3, 6, BOAT_X);
     y.attach(4, 7, FIRST_ZONE_Y);
     z.attach(5, 8, RETRACTION_Z);
+
+    Serial.println("ATTACHING TIMER");
+  ITimer2.init();
+    if (ITimer2.attachInterruptInterval(UPDATE_INTERVAL, measureZones))
+        Serial.println("TIMER ATTACHED");
+    else {
+        Serial.println("COULD NOT SET TIMER, HELP!!!");
+        while (true)
+            ;
+    }
+
+    Serial.print("SLEEPING TO CALIBRATE, FOR ");
+    Serial.print((int) LIGHT_CALIBRATION_TIME);
+    Serial.println(" MS");
+    delay(LIGHT_CALIBRATION_TIME);
+    for (auto &zone : boatZones) {
+        zone.calibrateLight();
+    }
+    for (auto &zone : portZones) {
+        zone.calibrateLight();
+    }
+
     Serial.println("SETUP COMPLETE");
 }
 
@@ -101,12 +138,10 @@ void moveContainer(Zone &src, Zone &dst) {
 
 template <size_t N, size_t M> void moveBetweenZones(Zone (&sources)[N], Zone (&destinations)[M]) {
     for (Zone &src : sources) {
-        src.updateState();
         if (src.state != HAS_CONTAINER_TO_MOVE)
             continue;
 
         for (Zone &dst : destinations) {
-            dst.updateState();
             if (dst.state != EMPTY)
                 continue;
 
@@ -117,16 +152,15 @@ template <size_t N, size_t M> void moveBetweenZones(Zone (&sources)[N], Zone (&d
 }
 
 void manualControl() {
-    Serial.println("Manual control enabled, skipping automatic movement.");
     int16_t xDesired = analogRead(DESIRED_X_PIN);
     int16_t yDesired = analogRead(DESIRED_Y_PIN);
     bool zExtensionRequested = digitalRead(DESIRED_Z_PIN) == HIGH;
     bool electromagnet = digitalRead(DESIRED_ELECTROMAGNET_STATE_PIN) == LOW;
-    Serial.print("Moving to (");
+    Serial.print("Moving (due to manual control) to x=");
     Serial.print(xDesired);
-    Serial.print(", ");
+    Serial.print(" y=");
     Serial.print(yDesired);
-    Serial.print(", ");
+    Serial.print(" z=");
     Serial.print(zExtensionRequested ? "extended" : "retracted");
     Serial.print(") with electromagnet ");
     Serial.println(electromagnet ? "enabled" : "disabled");
@@ -141,7 +175,6 @@ void loop() {
         manualControl();
         return;
     }
-
     moveBetweenZones(boatZones, portZones);
     moveBetweenZones(portZones, boatZones);
 }
