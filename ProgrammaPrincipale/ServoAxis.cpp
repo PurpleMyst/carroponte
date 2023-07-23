@@ -1,9 +1,9 @@
 #include "ServoAxis.hpp"
 
-void ServoAxis::attach(uint8_t servoPin, uint8_t commsPin, int16_t initialPosition)  {
+void ServoAxis::attach(uint8_t servoPin, uint8_t commsPin, int16_t initialPosition) {
     this->commsPin = commsPin;
     pinMode(commsPin, OUTPUT);
-      servo.attach(servoPin);
+    servo.attach(servoPin);
     moveTo(initialPosition);
 }
 

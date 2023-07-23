@@ -16,15 +16,6 @@ void setup() {
 }
 
 void loop() {
-    if (digitalRead(MANUAL_CONTROL_ENABLE_PIN) == LOW) {
-        Serial.print("Reading manual control: ");
-        Serial.print(analogRead(DESIRED_X_PIN));
-        Serial.print(' ');
-        Serial.print(analogRead(DESIRED_Y_PIN));
-        Serial.print(' ');
-        Serial.println(analogRead(DESIRED_Z_PIN));
-        delay(1000);
-    }
 }
 
 void serialEvent() {

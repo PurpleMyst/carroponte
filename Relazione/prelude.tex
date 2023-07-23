@@ -26,6 +26,7 @@
 \usepackage{float,flafter,caption,subcaption,graphicx,import}
 \usepackage{xcolor,xurl}
 \usepackage{qrcode}
+\graphicspath{{assets/}}
 
 \usepackage{multicol}
 
@@ -245,6 +246,7 @@ point/.style={inner sep = 1pt, circle, fill},
 
 % header
 \usepackage{titling,fancyhdr}
+\pagestyle{empty}
 % \pagestyle{fancy}
 % \DeclareDocumentCommand\chaptermark[1]{\markboth{[\thechapter]\ #1}{}}
 % \fancyhead{}
@@ -308,5 +310,5 @@ point/.style={inner sep = 1pt, circle, fill},
     \usepackage{tcolorbox}
     \tcbuselibrary{minted}
     \tcbuselibrary{breakable}
-    \tcbset{listing only,breakable,fonttitle=\bfseries,float*=htbp,width=\textwidth}
+    \tcbset{listing only,breakable,fonttitle=\bfseries,float*=H,width=\textwidth}
 }

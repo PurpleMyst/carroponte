@@ -70,7 +70,7 @@ parte magnetica per il sollevamento.
 \section{Sistema di controllo}
 
 Il sistema di controllo è, come anticipato, di duplice natura: Esso consiste in un PLC Zelio Logic
-SR3B261BD ed Arduino MEGA della Robotdyn. Il primo implementa la logica di telecontrollo e
+SR3B261BD ed un Arduino MEGA. Il primo implementa la logica di telecontrollo e
 telemonitoraggio, comunicando con lo SCADA mediante il protocollo Modbus; il secondo implementa il
 controllo locale dei servomotori e dei fotoresistori.
 
@@ -79,6 +79,29 @@ al momento della rilevazione effettua lo spostamento senza intervento umano. Le 
 dinamicamente trattate come zone di carico e di scarico, cioè il carroponte è capace di rilevare
 carichi posti nelle zone da operatori (che sono quindi da spostare) e carichi posti dal carroponte
 stesso (che sono quindi in attesa di un operatore che li rimuova).
+
+Particolare attenzione è stata prestata alla comunicazione tra PLC ed Arduino. I pin di
+comunicazione dal PLC ad Arduino utilizzano i resistori interni pull-up di quest'ultimo, cioè ai
+relè d'uscita del PLC vi è collegata la massa comune tra i due dispositivi, onde evitare problemi
+per i livelli di tensione discordanti tra i due dispositivi. I pin di comunicazione da Arduino al
+PLC sono perlopiù analogici, ed utilizzano un filtro passa-basso del primo ordine per rendere gli
+impulsi PWM del microcontrollore un segnale analogico di tensione, estraendo da essi il livello di
+continua.
+
+\section{Sistema SCADA}
+
+Il sistema SCADA è stato realizzato con il software Vijeo Citect. Esso comunica in tempo reale con
+il PLC (e quindi con Arduino) mediante il protocollo Modbus, e permette di monitorare lo stato del
+sistema e di controllarlo manualmente. In particolare è possibile controllare manualmente le
+posizioni di tutte e tre le assi, attivare/disattivare il magnete e ottenere le letture di tutte le
+zone di carico/scarico.
+
+% TODO: immagini dello SCADA
+
+\begin{figure}[htbp]\centering
+    \caption{Il modello 3D del carroponte.}
+    \includegraphics[width=\linewidth]{render-carroponte.png}
+\end{figure}
 
 \printbibliography
 
@@ -90,7 +113,15 @@ stesso (che sono quindi in attesa di un operatore che li rimuova).
 \tcbinputlisting{title={Header per la gestione delle zone.}, minted language=cpp, listing file=../ProgrammaPrincipale/Zone.hpp}
 \tcbinputlisting{title={File principale per la gestione delle zone.}, minted language=cpp, listing file=../ProgrammaPrincipale/Zone.cpp}
 
-% TODO: programma Zelio
-% TODO: schema elettrico in KiCAD
+\begin{figure*}[htbp]\centering
+    \caption{Lo schema elettrico del sistema.}
+    \includegraphics[width=\linewidth]{SchemaKiCAD}
+\end{figure*}
+
+\begin{figure*}[htbp]\centering
+    \caption{Il programma caricato nel PLC.}
+    \includegraphics[width=\linewidth]{programma-zelio}
+\end{figure*}
 
 \end{document}
+% vim: ft=tex
