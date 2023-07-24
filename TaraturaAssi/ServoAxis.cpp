@@ -12,7 +12,7 @@ void ServoAxis::moveTo(int16_t desiredPosition) {
     for (int16_t angle = servo.read(); angle != desiredPosition; angle += delta) {
         analogWrite(commsPin, angle);
         servo.write(angle);
-        delay(50);
+        delay(40);
     }
     delay(50);
 }

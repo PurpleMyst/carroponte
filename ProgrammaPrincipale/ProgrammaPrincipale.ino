@@ -23,12 +23,12 @@ const size_t BOAT_ZONES = 2;
 const size_t PORT_ZONES = 2;
 
 Zone boatZones[BOAT_ZONES] = {
-    {A15, BOAT_X, FIRST_ZONE_Y},
-    {A14, BOAT_X, SECOND_ZONE_Y},
+    {A15, 46, BOAT_X, FIRST_ZONE_Y},
+    {A14, 44, BOAT_X, SECOND_ZONE_Y},
 };
 Zone portZones[PORT_ZONES] = {
-    {A13, PORT_X, FIRST_ZONE_Y},
-    {A12, PORT_X, SECOND_ZONE_Y},
+    {A13, 42, PORT_X, FIRST_ZONE_Y},
+    {A12, 40, PORT_X, SECOND_ZONE_Y},
 };
 
 ServoAxis x, y, z;

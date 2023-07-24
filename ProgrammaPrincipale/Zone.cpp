@@ -4,8 +4,8 @@ const uint64_t CALIBRATION_TOTAL_TIME = 2000;
 const uint64_t DETECTION_TIME = 500;
 const double AMBIENT_LIGHT_FRACTION = 0.35;
 
-Zone::Zone(uint8_t pin, int16_t x, int16_t y)
-    : photoresistorPin(pin), x(x), y(y), detectionThreshold(0), state(EMPTY) {}
+Zone::Zone(uint8_t photoresistorPin, uint8_t plcPin, int16_t x, int16_t y)
+    : photoresistorPin(photoresistorPin), plcPin(plcPin), x(x), y(y), detectionThreshold(0), state(EMPTY) {}
 
 void Zone::calibrate() {
     double sum = 0;
@@ -39,7 +39,10 @@ bool Zone::containerDetected() {
         readings += 1;
     }
     double mean = sum / readings;
-    return mean <= detectionThreshold;
+    bool detection = mean <= detectionThreshold;
+    pinMode(plcPin, OUTPUT);
+    digitalWrite(plcPin, detection ? HIGH : LOW);
+    return detection;
 }
 
 void Zone::updateState() {

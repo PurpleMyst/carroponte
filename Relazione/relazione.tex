@@ -88,6 +88,11 @@ PLC sono perlopiù analogici, ed utilizzano un filtro passa-basso del primo ordi
 impulsi PWM del microcontrollore un segnale analogico di tensione, estraendo da essi il livello di
 continua.
 
+Inoltre le letture dei fotoresistori utilizzano una media nel tempo (cioè formalmente un filtro
+passa-basso) per evitare false rilevazioni. La loro taratura è effettuata automaticamente all'avvio
+del programma, ed il microcontrollore Arduino comunica al PLC lo stato dei fotoresistori in basa
+alla taratura da esso effettuata.
+
 \section{Sistema SCADA}
 
 Il sistema SCADA è stato realizzato con il software Vijeo Citect. Esso comunica in tempo reale con
@@ -96,7 +101,10 @@ sistema e di controllarlo manualmente. In particolare è possibile controllare m
 posizioni di tutte e tre le assi, attivare/disattivare il magnete e ottenere le letture di tutte le
 zone di carico/scarico.
 
-% TODO: immagini dello SCADA
+\begin{figure}[htbp]\centering
+    \caption{Il sistema SCADA in funzione.}
+    \includegraphics[width=\linewidth]{scada.png}
+\end{figure}
 
 \begin{figure}[htbp]\centering
     \caption{Il modello 3D del carroponte.}

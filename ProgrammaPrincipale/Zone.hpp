@@ -14,12 +14,12 @@ enum ZoneState {
 };
 
 struct Zone {
-    uint8_t photoresistorPin;
+    uint8_t photoresistorPin, plcPin;
     enum ZoneState state;
     int16_t x, y;
     int16_t detectionThreshold;
 
-    Zone(uint8_t, int16_t, int16_t);
+    Zone(uint8_t, uint8_t, int16_t, int16_t);
 
     bool containerDetected();
     void updateState();
