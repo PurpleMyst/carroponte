@@ -23,12 +23,12 @@ const size_t BOAT_ZONES = 2;
 const size_t PORT_ZONES = 2;
 
 Zone boatZones[BOAT_ZONES] = {
-    {A15, BOAT_X, FIRST_ZONE_Y, 120},
-    {A14, BOAT_X, SECOND_ZONE_Y, 100},
+    {A15, BOAT_X, FIRST_ZONE_Y},
+    {A14, BOAT_X, SECOND_ZONE_Y},
 };
 Zone portZones[PORT_ZONES] = {
-    {A13, PORT_X, FIRST_ZONE_Y, 75},
-    {A12, PORT_X, SECOND_ZONE_Y, 70},
+    {A13, PORT_X, FIRST_ZONE_Y},
+    {A12, PORT_X, SECOND_ZONE_Y},
 };
 
 ServoAxis x, y, z;
@@ -51,9 +51,19 @@ void setup() {
     pinMode(DESIRED_ELECTROMAGNET_STATE_PIN, INPUT_PULLUP);
     pinMode(DESIRED_Z_PIN, INPUT_PULLUP);
 
+    Serial.println("HOMING AXES");
     x.attach(3, 6, 0);
     y.attach(4, 7, FIRST_ZONE_Y);
     z.attach(5, 8, RETRACTION_Z);
+
+    Serial.println("CALIBRATING ZONES (TAKES A WHILE)");
+    for (Zone &zone : boatZones) {
+        zone.calibrate();
+    }
+    for (Zone &zone : portZones) {
+        zone.calibrate();
+    }
+
     Serial.println("SETUP COMPLETE");
 }
 
@@ -83,6 +93,8 @@ void moveContainer(Zone &src, Zone &dst) {
     z.moveTo(EXTENSION_Z);
     setElectromagnet(false);
     z.moveTo(RETRACTION_Z);
+
+    delay(1000);
 
     // Check if movement actually happened, and if so update the states.
     if (!src.containerDetected()) {

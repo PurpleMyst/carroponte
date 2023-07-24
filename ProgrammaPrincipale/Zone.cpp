@@ -1,10 +1,45 @@
 #include "Zone.hpp"
 
-Zone::Zone(uint8_t pin, int16_t x, int16_t y, int16_t detectionThreshold) : photoresistorPin(pin), x(x), y(y), detectionThreshold(detectionThreshold), state(EMPTY) {}
+const uint64_t CALIBRATION_TOTAL_TIME = 2000;
+const uint64_t DETECTION_TIME = 500;
+const double AMBIENT_LIGHT_FRACTION = 0.35;
 
-bool Zone::containerDetected() { 
-    int16_t value = analogRead(photoresistorPin);
-    return value <= detectionThreshold; 
+Zone::Zone(uint8_t pin, int16_t x, int16_t y)
+    : photoresistorPin(pin), x(x), y(y), detectionThreshold(0), state(EMPTY) {}
+
+void Zone::calibrate() {
+    double sum = 0;
+    double readings = 0;
+
+    for (uint64_t start = millis(); millis() < start + CALIBRATION_TOTAL_TIME;) {
+        double value = analogRead(photoresistorPin);
+        sum += value;
+        readings += 1;
+    }
+    double mean = sum / readings;
+
+    Serial.print("Zone @ (");
+    Serial.print(x);
+    Serial.print(", ");
+    Serial.print(y);
+    Serial.print(") has mean of ");
+    Serial.print(mean);
+    Serial.print(" w/ threshold of ");
+    Serial.println(AMBIENT_LIGHT_FRACTION * mean);
+    detectionThreshold = AMBIENT_LIGHT_FRACTION * mean;
+}
+
+bool Zone::containerDetected() {
+    double sum = 0;
+    double readings = 0;
+
+    for (uint64_t start = millis(); millis() < start + DETECTION_TIME;) {
+        double value = analogRead(photoresistorPin);
+        sum += value;
+        readings += 1;
+    }
+    double mean = sum / readings;
+    return mean <= detectionThreshold;
 }
 
 void Zone::updateState() {
