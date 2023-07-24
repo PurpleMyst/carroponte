@@ -1,5 +1,7 @@
 \input{prelude}
 
+\usepackage{qrcode}
+
 \SetupMinted{}
 \SetupBibliography{relazione.bib}
 
@@ -107,9 +109,75 @@ zone di carico/scarico.
 \end{figure}
 
 \begin{figure}[htbp]\centering
+    \caption{Un QR code che punta ad una playlist di YouTube illustrativa del funzionamento del carroponte.}
+    \qrcode{https://www.youtube.com/playlist?list=PLQibPYPJUsXOkAgrr44d6yh03rm6YIBDL}
+\end{figure}
+
+\begin{figure}[htbp]\centering
     \caption{Il modello 3D del carroponte.}
     \includegraphics[width=\linewidth]{render-carroponte.png}
 \end{figure}
+
+\begin{table}[htbp]\centering
+    \caption{Gli ingressi del PLC.}
+    \begin{tabularx}{\columnwidth}{@{}lcX@{}}\toprule
+        \textbf{Input} & \textbf{Simbolo}                                 & \textbf{Funzione}                                 \\ \midrule
+        I1             & \includegraphics[width=16px]{input-digitale}     & Lo stato dell'elettromagnete al presente momento. \\
+        IB             & \includegraphics[width=16px]{input-analogico}    & La posizione corrente in Z.                       \\
+        ID             & \includegraphics[width=16px]{input-analogico}    & Lettura del fotoresistore zona 1.                 \\
+        IE             & \includegraphics[width=16px]{input-analogico}    & Lettura del fotoresistore zona 2.                 \\
+        IF             & \includegraphics[width=16px]{input-analogico}    & Lettura del fotoresistore zona 3.                 \\
+        IG             & \includegraphics[width=16px]{input-analogico}    & Lettura del fotoresistore zona 4.                 \\
+        IH XT2         & \includegraphics[width=16px]{input-analogico-xt} & La posizione corrente in X.                       \\
+        IJ XT2         & \includegraphics[width=16px]{input-analogico-xt} & La posizione corrente in Y.                       \\
+    \bottomrule\end{tabularx}
+\end{table}
+
+\begin{table}[htbp]\centering
+    \caption{Le uscite (fisiche e non) del PLC.}
+    \begin{tabularx}{\columnwidth}{@{}lcX@{}}\toprule
+        \textbf{Output} & \textbf{Simbolo}                              & \textbf{Funzione}                                                                                            \\ \midrule
+        Q1              & \includegraphics[width=16px]{output-digitale} & Abilitazione controllo manuale.                                                                              \\
+        Q2              & \includegraphics[width=16px]{output-digitale} & Stato desiderato elettromagnete.                                                                             \\
+        Q3              & \includegraphics[width=16px]{output-digitale} & Posizione desiderata in Z.                                                                                   \\
+        O1 XT1          & \includegraphics[width=16px]{output-scada}    & Posizione corrente in X per SCADA.                                                                           \\
+        O2 XT1          & \includegraphics[width=16px]{output-scada}    & Posizione corrente in Y per SCADA.                                                                           \\
+        O3 XT1          & \includegraphics[width=16px]{output-scada}    & Posizione corrente in Z per SCADA.                                                                           \\
+        O4 XT1          & \includegraphics[width=16px]{output-scada}    & Insieme di bit corrispondenti alla rilevazione delle fotoresistenze e lo stato corrente dell'elettromagnete. \\
+    \bottomrule\end{tabularx}
+\end{table}
+
+\begin{table}[htbp]\centering
+    \caption{Blocchi configurabili del PLC.}
+    \begin{tabularx}{\columnwidth}{@{}lcX@{}}\toprule
+        \textbf{No.} & \textbf{Simbolo}                           & \textbf{Funzione}                                                                    \\ \midrule
+        B026         & \includegraphics[width=16px]{comparator}   & Rilevazione Zona 1, OFF tra le due successive costanti numeriche e ON altrimenti.    \\
+        B027         & \includegraphics[width=16px]{comparator}   & Rilevazione Zona 2, OFF tra le due successive costanti numeriche e ON altrimenti..   \\
+        B028         & \includegraphics[width=16px]{comparator}   & Rilevazione Zona 3, OFF tra le due successive costanti numeriche e ON altrimenti.    \\
+        B029         & \includegraphics[width=16px]{comparator}   & Rilevazione Zona 4, OFF tra le due successive costanti numeriche e ON altrimenti.DA. \\
+        B030         & \includegraphics[width=16px]{num-constant} & Soglia minima zone (0).                                                              \\
+        B031         & \includegraphics[width=16px]{num-constant} & Soglia massima zone (100).                                                           \\
+    \bottomrule\end{tabularx}
+\end{table}
+
+\begin{table*}[htbp]\centering
+    \caption{Tag di Vijeo Citect.}
+    \begin{tabular}{@{}lcc@{}}\toprule
+        \textbf{Nome}                               & \textbf{Indirizzo} & \textbf{Tipo di dati} \\ \midrule
+        Posizione\_desiderata\_X\_J1            & \%MW16       & INT                   \\
+        Posizione\_desiderata\_Y\_J2            & \%MW17       & INT                   \\
+        Enable\_controllo\_manuale\_J4\_1        & \%MW19.0     & DIGITAL               \\
+        Stato\_desiderato\_elettromagnete\_J4\_2 & \%MW19.1     & DIGITAL               \\
+        Posizione\_desiderata\_Z\_J4\_3          & \%MW19.2     & DIGITAL               \\
+        Posizione\_reale\_X\_O1                 & \%MW20       & INT                   \\
+        Posizione\_reale\_Y\_O2                 & \%MW21       & INT                   \\
+        Posizione\_reale\_Z\_O3                 & \%MW22       & INT                   \\
+        Zona1\_O4\_1                           & \%MW23.0     & DIGITAL               \\
+        Zona2\_O4\_2                           & \%MW23.1     & DIGITAL               \\
+        Zona3\_O4\_3                           & \%MW23.2     & DIGITAL               \\
+        Zona4\_O4\_4                           & \%MW23.3     & DIGITAL               \\
+    \bottomrule\end{tabular}
+\end{table*}
 
 \printbibliography
 
