@@ -20,54 +20,148 @@
 \end{figure}}]
 
 \begin{abstract}
-    Nella presente relazione si descrive il progetto di un sistema di controllo per un carroponte
-    completamente automatizzato mediante l'utilizzo sinergico di un PLC Zelio Logic SR3B261BD ed
-    un Arduino MEGA. Esso è capace di caricare e scaricare container da una nave merce, con
-    l'ausilio di due zone di carico poste sulla nave e due zone di carico poste sul porto. Il
-    sistema presenta inoltre la possibilità di essere telecontrollato remotamente mediante il
-    protocollo Modbus, grazie al sistema SCADA.
-    \cite{arm2015real}
+    Nella presente relazione si descrive il progetto di un carroponte smart, ovvero un carroponte
+    completamente automatizzato grazie all'utilizzo sinergico di un PLC Zelio Logic SR3B261BD,
+    completo di moduli aggiuntivi SR343XTBD e SR3NET01BD, ed un Arduino MEGA. Il progetto è capace
+    di caricare e scaricare container da una nave merce in totale autonomia, con un totale di
+    quattro zone di carico (due poste sul porto e due sulla nave). Inoltre, è possibile monitorare
+    da remoto e telecontrollare il carroponte grazie ad un sistema SCADA realizzato con il software
+    Vijeo Citect ed il protocollo Modbus. \cite{arm2015real}
 \end{abstract}
 
 \section{Introduzione e scopo del progetto}
 
-I carriponte sono macchine utilizzate per il sollevamento e lo spostamento di carichi pesanti.
-Trovano larga applicazione in innumerevoli campi, tra cui le navi merce, cantieri edili e magazzini,
-pertanto sono un ottimo esempio di possibilità applicativa dell'automazione industriale.
+I carriponte sono macchine utilizzate per il sollevamento e lo spostamento di carichi pesanti;
+trovano larga applicazione in innumerevoli campi, tra cui le navi merce, cantieri edili e magazzini.
+In particolare si è scelto di modellare un carroponte portuale, dato il suo alto potenziale per
+l'applicazione dell'automazione industriale: Le zone da cui caricare/scaricare sono praticamente
+fisse, ovvero si carica sempre dalla nave al porto e viceversa.
 \cite{ren2021design,li2015data}
 
-La loro automatizzazione permette di ridurre di gran lunga i tempi di fermo macchina, ed inoltre
-aumenta notevolmente la sicurezza in quanto toglie dall'equazione gli errori umani.
+L'automatizzazione di tali dispositivi rappresenta un grande vantaggio, permettendo di ridurre i
+tempi di fermo macchina (incrementando dunque l'efficienza), diminuire i costi a lungo termine e
+rendere molto più sicuro l'intero impianto grazie all'eliminazione dell'elemento umano.
 \cite{gupta2004simplified}
 
-Nella trattazione successiva andremmo a delineare il nostro prototipo di sistema di
-controllo per un carroponte portuale, basato sull'utilizzo di un PLC Zelio Logic SR3B261BD per
-l'automatizzazione progressiva di un sistema precedentemente ad-hoc. Il basso costo del sopracitato
-dispositivo permette ad un impianto già esistente di mantenere le sue funzioni di base, mentre il
-PLC svolge le sue mansioni di telecontrollo e monitoraggio.
-
-% Le dimensioni complessive sono $\qty{25}{\cm} \times \qty{16}{\cm} \times \qty{24}{\cm}$.
+Nella trattazione successiva andremo a delineare il nostro prototipo di sistema di controllo per un
+carroponte portuale, basato (come anticipato) sull'utilizzo di un PLC Zelio Logic SR3B261BD per
+l'automatizzazione progressiva di un sistema precedentemente ad-hoc, basato su un Arduino MEGA. Il
+basso costo del sopracitato PLC permette ad un impianto già esistente di mantenere le sue funzioni
+di base, delegando ad il PLC le mansioni di telecontrollo e monitoraggio, che svolge in maniera
+semplice ed affidabile.
 
 \section{Design e componenti}
 
-Il modello per la stampa 3D è stato realizzato mediante il software \emph{AutoDesk Fusion 360} e
-stampato su una coppia di stampanti, rispettivamente una \emph{Eryone Thinker SE} ed una
-\emph{Wunhao GR2}. Il modello è stato realizzato in modo da poter essere stampato in più parti, date
-le limitazioni di dimensione dei piatti di stampa, e poi assemblato mediante una vasta gamma di
-accoppiamenti, tra cui incastri, colla e viti.
+Nella presente sezione verranno descritte le scelte progettuali effettuate per la realizzazione del
+prototipo.
 
-Sia sulla nave che sul porto sono state realizzate apposite tasche per alloggiare i container,
-all'interno delle quali sono state inserite delle fotoresistenze per la rilevazione della presenza o
-assenza di quest'ultimi.
+\subsection{Struttura del carroponte}
 
-Il porto presenta poi delle guide all'interno delle quali scorre il carroponte, mediante un
-servomotore, su un asse detta X. Sul carroponte vi sono due cremagliere, veicolate anch'esse da due
-motori servo, rispettivamente denominate Y per l'asse propria del carroponte e Z per l'asse di
-sollevamento.
+Per la realizzazione della struttura del prototipo è stata scelta la stampa 3D, in
+particolare la cosiddetta tecnica del \emph{Fused Deposition Modeling} (FDM). Essa si basa sulla
+deposizione di materiale fuso su un letto di stampa, ed ha avuto per la progettazione le seguenti proprietà desiderabili.
+\begin{itemize}
+    \item Sicurezza dei materiali: Il progetto è stato stampato interamente in una tipologia di
+        polimero detta PLA (acido polilattico), che è biodegradabile e non tossica in quanto
+        prodotta dalla fermentazioni di amidi vegetali. Ciò ha permesso perciò la possibilità della
+        struttura con delle stampanti casalinghe, in particolare una \emph{Eryone Thinker SE} ed una
+        \emph{Wunhao GR2}.
+    \item Basso costo: Una bobina di plastica per la stampa ha un costo di intorno
+        \qty{15}{\euro\per\kg}, e per la realizzazione del progetto ne è stata utilizzata la maggior
+        parte.
+    \item Resistenza: Il PLA ha un elevata resistenza, il che previene a monte eventuali flessioni,
+        rotture o deformazioni.
+    \item Facilità di lavorazione: Il PLA è un materiale molto facile da lavorare, in quanto
+        facilmente tagliabile, forabile e verniciabile. Si presta inoltre bene all'accoppiamento di
+        molteplici parti, grazie alla sua capacità di essere giunto mediante colla o viti.
+    \item Facilità di stampa: Il PLA è un materiale molto facile da stampare, in quanto non richiede
+        temperature elevate o altre particolari condizioni di stampa. Ciò è in contrasto a materiali
+        come l'ABS (\emph{acrilonitrile-butadiene-stirene}), che richiede un'elevata temperatura di
+        stampa (intorno ai \qty{235}{\degreeCelsius} per l'estrusore contro i
+        \qty{200}{\degreeCelsius} del PLA, il che può causare l'offgassing di fumi nocivi dei
+        materiali che compongono la stampante in sé) e particolari condizioni di umidità, ed inoltre
+        rende assolutamente necessaria una enclosure per la stampante onde evitare la dispersione
+        nell'ambiente dei gas nocivi prodotti durante il processo di estrusione del materiale fuso.
+        Tuttavia, come la maggior parte delle scelte progettuali in ambito ingegneristico, ciò
+        consiste in un trade-off: Materiali come l'ABS hanno una elevata resistenza ai raggi
+        ultravioletti del sole (che il carroponte subirebbe in caso di utilizzo in un porto reale),
+        mentre il PLA diverrebbe fragile e si degraderebbe nel tempo.
+\end{itemize}
 
-L'asse Z presenta sulla sua estremità inferiore un elettromagnete controllabile mediante corrente
-continua responsabile per l'aggancio e lo sgancio dei container, i quali sono dotati di un'apposita
-parte magnetica per il sollevamento.
+Per la progettazione del modello è stato utilizzato il software \emph{AutoDesk Fusion 360}, uno dei
+programmi più diffusi della AutoDesk per le progettazioni CAD. Esso permette di realizzare modelli
+complessi, grazie anche alla sua vasta gamma di plugin. In particolare, grazie al plugin
+\emph{Helical Gear Plus}, è stato possibile progettare su misura i vari ingranaggi e cremagliere del
+carroponte.
+
+Analizziamo nel dettaglio ora il modello, mostrato nella sua interezza assemblata in
+figura~\ref{fig:allproj}.
+\begin{itemize}
+    \item La base inferiore del modello (cfr.\@ figura~\ref{fig:cremabase}) presenta degli slot perimetrali per l'incastro con la base
+        intermedia, ed è formata nella restante parte da una cremagliera sulla quale scorre il carroponte.
+    \item La base intermedia del modello (cfr.\@ figura~\ref{fig:gearbase}) presenta anch'essa degli
+        slot perimetrali per l'incastro con la base inferiore e la base superiore, oltre a due
+        binari nei quali scorre il carroponte e due fori per il cablaggio del servomotore presente
+        sull'estremità inferiore del carroponte stesso. Durante la coordinazione delle stampe, si è
+        rilevata la necessità di stampare questo pezzo in due parti, pertanto sono state aggiunti
+        quattro fori per l'accoppiamento di quest'ultime mediante delle viti.
+    \item La base superiore del modello (cfr.\@ figura~\ref{fig:upperbase}) presenta ovviamente
+        anch'essa degli slot perimetrali per l'incastro con la base intermedia, nonché i binari per
+        lo scorrimento del carroponte ed un foro posteriore per il cablaggio.
+        Sulla sua superficie superiore si può trovare la nave merci, che ha due tasche per
+        l'alloggio dei container e per la loro eventuale rilevazione mediante dei fotoresistori
+        posti in appositi fori. Sulla parte subito successiva alla nave, ovvero sul porto, si trovano poi altre due tasche analoghe.
+    \item Il carroponte (cfr.\@ figura~\ref{fig:carroponte}) ha la forma di un ferro di cavallo. Alla
+        sua estremità inferiore, come anticipato, troviamo un albero di trasmissione che permette lo
+        scorrimento lungo la base inferiore grazie a due ingranaggi ed un servomotore in esso
+        incastonato. Alla sua estremità superiore troviamo invece due servomotori con altrettanti
+        ingranaggi e cremagliere che permettono lo scorrimento del braccio magnetico (cfr.\@
+        figura~\ref{fig:magnetarm}) lungo gli assi Y e Z.
+\end{itemize}
+
+\begin{figure}[!hbtp]\centering
+    \caption{Il modello nella sua interezza.}\label{fig:allproj}
+    \includegraphics[width=\linewidth]{renders/AllProj.png}
+\end{figure}
+\begin{figure}[!hbtp]\centering
+    \caption{La base inferiore del modello, sostanzialmente ricoperta da una cremagliera.}\label{fig:cremabase}
+    \includegraphics[width=\linewidth]{renders/CremaBase.png}
+\end{figure}
+\begin{figure}[!hbtp]\centering
+    \caption{La base intermedia del modello.}\label{fig:gearbase}
+    \includegraphics[width=\linewidth]{renders/GearBase.png}
+\end{figure}
+\begin{figure}[!hbtp]\centering
+    \caption{La base superiore del modello, completa di nave e un container.}\label{fig:upperbase}
+    \includegraphics[width=\linewidth]{renders/UpperBase-Boat-Container.PNG}
+\end{figure}
+\begin{figure}[!hbtp]\centering
+    \caption{Il braccio che tiene l'elettromagnete.}\label{fig:magnetarm}
+    \includegraphics[width=\linewidth]{renders/BraccioMagnete.png}
+\end{figure}
+\begin{figure}[!hbtp]\centering
+    \caption{Il carroponte, completo di braccio, ingranaggi, cremagliere e servomotori.}\label{fig:lowerbase}
+    \includegraphics[width=\linewidth]{renders/Carroponte.PNG}
+\end{figure}
+
+% Il modello per la stampa 3D è stato realizzato mediante il software \emph{AutoDesk Fusion 360} e
+% stampato su una coppia di stampanti, rispettivamente una \emph{Eryone Thinker SE} ed una
+% \emph{Wunhao GR2}. Il modello è stato realizzato in modo da poter essere stampato in più parti, date
+% le limitazioni di dimensione dei piatti di stampa, e poi assemblato mediante una vasta gamma di
+% accoppiamenti, tra cui incastri, colla e viti.
+% 
+% Sia sulla nave che sul porto sono state realizzate apposite tasche per alloggiare i container,
+% all'interno delle quali sono state inserite delle fotoresistenze per la rilevazione della presenza o
+% assenza di quest'ultimi.
+% 
+% Il porto presenta poi delle guide all'interno delle quali scorre il carroponte, mediante un
+% servomotore, su un asse detta X. Sul carroponte vi sono due cremagliere, veicolate anch'esse da due
+% motori servo, rispettivamente denominate Y per l'asse propria del carroponte e Z per l'asse di
+% sollevamento.
+% 
+% L'asse Z presenta sulla sua estremità inferiore un elettromagnete controllabile mediante corrente
+% continua responsabile per l'aggancio e lo sgancio dei container, i quali sono dotati di un'apposita
+% parte magnetica per il sollevamento.
 
 \section{Sistema di controllo}
 
@@ -113,10 +207,10 @@ zone di carico/scarico.
     \qrcode{https://www.youtube.com/playlist?list=PLQibPYPJUsXOkAgrr44d6yh03rm6YIBDL}
 \end{figure}
 
-\begin{figure}[htbp]\centering
-    \caption{Il modello 3D del carroponte.}
-    \includegraphics[width=\linewidth]{render-carroponte.png}
-\end{figure}
+% \begin{figure}[htbp]\centering
+%     \caption{Il modello 3D del carroponte.}
+%     \includegraphics[width=\linewidth]{render-carroponte.png}
+% \end{figure}
 
 \begin{table}[htbp]\centering
     \caption{Gli ingressi del PLC.}
