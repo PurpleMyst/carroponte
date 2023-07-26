@@ -5,6 +5,8 @@
 \SetupMinted{}
 \SetupBibliography{relazione.bib}
 
+\NewDocumentCommand{\mail}{m}{\href{mailto:#1}{\texttt{#1}}}
+
 \begin{document}
 
 % TODO: better title
@@ -12,11 +14,13 @@
         \setlength{\linewidth}{\textwidth}
         \setlength{\hsize}{\textwidth}
         \centering
-        \begin{NiceTabular}{rl}
-            \Block{3-1}{\includegraphics[height=20ex]{logo}} & {\Large\bfseries Carroponte smart}                                        \\
-                                                             & Giuseppe Damiata, Vincenzo Mazza, Nicolò Spingola \\
-                                                             & Università degli studi di Palermo, Dipartimento di Ingegneria, Hangar\_9
-                                                             \\ \\ \\ % extra rows for logo spacing
+        \begin{NiceTabular}{r@{}c@{}l}
+            \Block{6-1}{\includegraphics[width=15ex]{./assets/logo.png}} & {\Large\bfseries Carroponte smart}                                          & \Block{6-1}{\includegraphics[width=20ex]{dipartimento}} \\
+                                                                         & Giuseppe Damiata (\mail{giuseppe.damiata01@community.unipa.it})             &                                                         \\
+                                                                         & Vincenzo Mazza (\mail{vincenzoluigi.mazza@community.unipa.it})              &                                                         \\
+                                                                         & Nicolò Spingola (\mail{nicolofrancescomaria.spingola@community.unipa.it})   &                                                         \\
+                                                                         & Università degli studi di Palermo, Dipartimento di Ingegneria, Hangar\_9    &                                                         \\
+                                                                         & Classe L-8 C.d.L.\@ in Ingegneria Cibernetica Meccatronica (A.A.\@ 2022/23) &                                                         \\
         \end{NiceTabular}
 \end{figure}}]
 
@@ -289,8 +293,8 @@ Partiamo dal descrivere, ad alto livello, l'algoritmo di controllo automatico.
     \item Finita la calibrazione, si entra nel loop principale. Nel caso in cui il PLC richieda
         l'attivazione del controllo manuale, si leggono le posizioni e gli stati desiderati delle
         assi e dell'elettromagnete e si seguono gli ordini dati e non si prosegue col controllo automatico.
-    \item Per il controllo automatico, viene effettuata la seguente procedura, considerando ciascuna
-        coppia possibile di sorgente e destinazione (nave $\to$ porto e porto $\to$ nave):
+    \item Per il controllo automatico, viene eseguita due volte la procedura a seguire, considerando
+        prima gli spostamenti dal porto alla nave e poi il viceversa:
         \begin{enumerate}
             \item Ciascuna zona aggiorna il proprio stato:
                 \begin{itemize}
@@ -402,7 +406,8 @@ invece il programma.
     \bottomrule\end{tabularx}
 \end{table}
 
-La scelta del linguaggio di programmazione in FBD (anche noto come FUP per i PLC targati Siemens) è
+\enlargethispage{-1\baselineskip}
+La scelta del linguaggio di programmazione FBD (anche noto come FUP per i PLC targati Siemens) è
 stata a noi obbligata dalla scelta dell'inclusione del modulo aggiuntivo SR3NET01BD, il quale impone
 appunto sia la programmazione in FBD che l'utilizzo di un PLC a \qty{24}{\volt}. In assenza di
 questa restrizione, i PLC sono programmabili in cinque linguaggi secondo la terza parte dello
@@ -471,7 +476,7 @@ Avendo costruito la grafica con il \emph{Citect Graphics Editor} (cfr.\@ figura~
 programmazione dei comportamenti dei pulsanti nonché degli indicatori è stata realizzata
 nell'apposito linguaggio Cicode. I pulsanti permettono di abilitare il controllo manuale, commutare
 lo stato dell'elettromagnete e spostare il carroponte lungo l'asse X, andando dal porto alla nave e
-viceversa, nonché lungo gli assi Y e Z. Indicator luminosi mostrano la presenza e l'assenza dei
+viceversa, nonché lungo gli assi Y e Z. Indicatori luminosi mostrano la presenza e l'assenza dei
 container nelle quattro zone, nonché la posizione del carroponte e lo stato di abilitazione del
 controllo manuale e dell'elettromagnete. Nella tabella~\ref{tab:tags} vengono elencate tutte le tag
 utilizzate.
@@ -519,17 +524,17 @@ Si ringraziano in primis i progettisti (tra i quali l'autore della presente rela
 personalmente i suoi compagni per la loro bravura e per la loro compagnia) e soprattutto il
 professore Francesco Maria Raimondi per lo spunto di crescita.
 
+\clearpage
 \printbibliography
-
 \clearpage
 
 \tcbinputlisting{title={Lo sketch principale.}, minted language=cpp, listing file=../ProgrammaPrincipale/ProgrammaPrincipale.ino}
 
 \tcbinputlisting{title={Header per il controllo degli assi con servo.}, minted language=cpp, listing file=../ProgrammaPrincipale/ServoAxis.hpp}
-\tcbinputlisting{title={File principale per il controllo degli assi con servo.}, minted language=cpp, listing file=../ProgrammaPrincipale/ServoAxis.cpp}
+\tcbinputlisting{title={File sorgente per il controllo degli assi con servo.}, minted language=cpp, listing file=../ProgrammaPrincipale/ServoAxis.cpp}
 
 \tcbinputlisting{title={Header per la gestione delle zone.}, minted language=cpp, listing file=../ProgrammaPrincipale/Zone.hpp}
-\tcbinputlisting{title={File principale per la gestione delle zone.}, minted language=cpp, listing file=../ProgrammaPrincipale/Zone.cpp}
+\tcbinputlisting{title={File sorgente per la gestione delle zone.}, minted language=cpp, listing file=../ProgrammaPrincipale/Zone.cpp}
 
 \end{document}
 % vim: ft=tex
