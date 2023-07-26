@@ -448,6 +448,20 @@ sistemi informatici distribuiti utilizzati per il controllo e il monitoraggio re
     \item una rete di comunicazione che assicura lo scambio di informazioni tra i computer e le
         unità periferiche tramite vari mezzi trasmissivi e protocolli.
 \end{itemize}
+Essi sono parte integrante della piramide CIM (Computer Integrated Manufacturing, cfr.\@
+figura~\ref{fig:piramide-cim}), che rappresenta la gerarchia dei livelli informativi di un'impresa
+manifatturiera. Nella piramide CIM, i sistemi SCADA si collocano al terzo livello, detto di
+supervisione e controllo, e comunicano sia con i livelli inferiori, relativi ai dispositivi di campo
+e ai sistemi di controllo locale, sia con i livelli superiori, relativi alla gestione della
+produzione e alla pianificazione strategica. Il ruolo dei sistemi SCADA nella piramide CIM è quindi
+quello di fornire una visione globale dello stato dei processi industriali, di raccogliere e
+archiviare i dati relativi alle prestazioni e agli eventi, di implementare funzioni di controllo
+avanzate e di ottimizzazione, e di interfacciarsi con gli altri sistemi informativi dell'impresa.
+
+\begin{figure}[htbp]\centering
+    \caption{La piramide CIM.}\label{fig:piramide-cim}
+    \includegraphics[width=\linewidth]{piramide-cim}
+\end{figure}
 
 La comunicazione tra il PLC e lo SCADA avviene mediante il protocollo MODNET, ovvero il protocollo
 MODBUS veicolato dal protocollo TCP/IP. Esso dà accesso a 64 bit (impacchettati in quattro interi)
@@ -467,10 +481,34 @@ le zone di carico/scarico. Ciò avviene in tempo reale sia in modalità manuale 
 automatica.
 
 Per configurare la comunicazione è stato utilizzato l'apposito \emph{Express Wizard} presente
-all'interno del software. Per la dimostrazione del sistema è stata utilizzata come rete un iPhone,
-che presentava come sub-net mask \mono{255.255.255.40} e gateway \mono{172.20.10.1}, dandoci come
-possibili scelte per l'IP del PLC da \mono{172.20.10.2} fino a \mono{172.20.10.14}. È stata
-selezionato arbitrariamente l'indirizzo terminante nel numero tredici.
+all'interno del software. Per la dimostrazione del sistema è stata utilizzata come router un iPhone
+attraverso un bridging effettuato con un computer portatile, che presentava come sub-net mask
+\mono{255.255.255.40} e gateway \mono{172.20.10.1}, dandoci come possibili scelte per l'IP del PLC
+da \mono{172.20.10.2} fino a \mono{172.20.10.14}. È stata selezionato arbitrariamente l'indirizzo
+terminante nel numero tredici.
+
+Nel caso di un'implementazione reale sul campo, al posto di un semplice smartphone il nostro sistema
+avrebbe seguito un percorso più tradizionale per la comunicazione SCADA-PLC, ovvero il seguente.
+\begin{enumerate}
+    \item Il PLC legge i segnali di input dai dispositivi sul campo e li memorizza nella sua memoria
+        interna.
+    \item Il PLC elabora i segnali di input secondo la logica programmata e genera i segnali di
+        output ai dispositivi di controllo.
+    \item Il modulo aggiuntivo SR3NET01BD trasmette i dati relativi ai segnali di input, output e stato del processo alla
+        rete di comunicazione, usando il protocollo Modbus TCP/IP.
+    \item Il router/modem riceve i dati dal PLC e li trasmette alla stazione centrale del sistema
+        SCADA, usando il protocollo TCP/IP, uno dei protocolli standard più affidabili.
+    \item I dispositivi presenti alla stazione di centrale cioè nella sala di comando effettuano
+        questo percorso ma in senso inverso.
+    \item Il programma SCADA riceve i dati dal PLC e li elabora secondo le funzioni del software,
+        visualizzando le informazioni sul processo sull'interfaccia grafica e inviando eventuali
+        comandi al PLC.
+\end{enumerate}
+
+Un possibile campo di applicazione reale potrebbe poi anche essere quello delle piattaforme
+petrolifere offshore, dove ovviamente non si può utilizzare una tradizionale connessione ADSL o in
+fibra ottica. In tal caso, sarebbe necessario utilizzare un collegamento satellitare, fornito da
+provider come la Starlink, Thuraya o Tuwei.
 
 Avendo costruito la grafica con il \emph{Citect Graphics Editor} (cfr.\@ figura~\ref{fig:scada}), la
 programmazione dei comportamenti dei pulsanti nonché degli indicatori è stata realizzata
