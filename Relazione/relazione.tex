@@ -20,7 +20,7 @@
         \end{NiceTabular}
 \end{figure}}]
 
-% TODO: index
+\tableofcontents\thispagestyle{empty}
 
 \begin{abstract}
     Nella presente relazione si descrive il progetto di un carroponte smart, ovvero un carroponte
@@ -98,7 +98,7 @@ complessi, grazie anche alla sua vasta gamma di plugin. In particolare, grazie a
 carroponte.
 
 Analizziamo nel dettaglio ora il modello, mostrato nella sua interezza assemblata in
-figura~\ref{fig:allproj} o in versione interattiva cliccando/scannando il codice QR in
+figura~\ref{fig:allproj} o in versione interattiva cliccando/scannerizzando il codice QR in
 figura~\ref{fig:qrcode-sketchfab}.
 \begin{itemize}
     \item La base inferiore del modello (cfr.\@ figura~\ref{fig:cremabase}) presenta degli slot perimetrali per l'incastro con la base
@@ -159,6 +159,7 @@ combinazione con un sensore ad ultrasuoni per il controllo a catena chiusa della
 scelta si è rivelata tuttavia fallace a causa dell'attrito incontrato in assenza di cremagliere,
 pertanto nella seconda revisione del progetto si è scelto il design precedentemente illustrato.
 
+\enlargethispage{3\baselineskip}
 I container sono stati anch'essi stampati in 3D, con due aggiunzioni.
 \begin{itemize}
     \item Sulla parte superiore di ciascun container è agganciata con del biadesivo una rondella
@@ -221,7 +222,7 @@ Per permettere la tanto citata integrazione in una rete industriale, il PLC è s
 un modulo aggiuntivo SR3NET01BD, che permette la comunicazione mediante il protocollo Modbus. Tale
 aspetto verrà approfondito in dettaglio più avanti.
 
-In fine, per una maggiore risoluzione delle letture analogiche e per permettere l'utilizzo di uscite
+Infine, per una maggiore risoluzione delle letture analogiche e per permettere l'utilizzo di uscite
 analogiche, è stato aggiunto anche un modulo SR343XTBD.
 
 \subsection{Componentistica, cablaggio, sensori e attuatori}
@@ -237,8 +238,8 @@ collegamento Arduino-PLC che permette di ottenere in maniera più affidabile le 
 presenza dei container, per ragioni che verranno spiegate più avanti.
 
 Per il controllo dei servomotori, si è scelto di utilizzare dei servomotori SG90, per le loro
-dimensioni miniaturizzate e la loro larga diffusione. Essi sono collegati a e controllati da
-l'Arduino, che è in grado di controllare fino a 15 servomotori contemporaneamente. Per la lettura
+dimensioni miniaturizzate e la loro larga diffusione. Essi sono collegati a e controllati
+dall'Arduino, che è in grado di controllare fino a 15 servomotori contemporaneamente. Per la lettura
 del PLC vi è nuovamente un apposito collegamento Arduino-PLC, con l'aggiunta di un filtro
 passa-basso del primo ordine (ovvero un circuito RC con $R = \qty{220}{\ohm}$ e $C =
 \qty{100}{\micro\farad}$ nonché l'approssimazione di un convertitore da digitale ad analogico) per
@@ -255,6 +256,11 @@ Per le comunicazione dal PLC all'Arduino, si è scelto di utilizzare la strategi
 pull-up: Normalmente, un resistore fa sì che il livello di tensione sia alto, ma quando il PLC vuole
 comunicare con l'Arduino, esso chiude un relè abbassa il livello di tensione a massa, e l'Arduino è
 in grado di rilevare tale cambiamento.
+
+\begin{figure*}[htbp]\centering
+    \caption{Lo schema elettrico del sistema.}\label{fig:schema-elettrico}
+    \includegraphics[width=\linewidth]{SchemaKiCAD}
+\end{figure*}
 
 \section{Sistema di controllo}
 
@@ -327,7 +333,32 @@ dettagli implementativi sono stati incapsulati all'interno di apposite classi (n
 
 \subsection{Lato PLC}
 
-TODO
+Il programma caricato sul PLC, realizzato con il programma ZelioSoft 2 in linguaggio FBD ed
+illustrato in figura~\ref{fig:programma-zelio}, è responsabile per tutto il telecontrollo ed il
+telemonitoraggio del sistema, ovvero della comunicazione Modbus tra lo SCADA ed il sistema. Le
+tabelle a seguire illustrano gli ingressi, le uscite e le configurazioni dei blocchi. Analizziamo
+invece il programma.
+\begin{itemize}
+    \item Le letture analogiche effettuate mediante l'estensione SR343XTBD corrispondono alla
+        posizione corrente sugli assi X ed Y, e vengono direttamente mandate a due word Modbus
+        (\%MW20 ed \%MW21). Al contrario, due word del Modbus (\%MW16 ed \%MW17) vengono
+        direttamente esposte come le uscite analogiche dello stesso modulo aggiuntivo per indicare
+        la posizione desiderata in X ed Y.
+    \item Per costituire i cinque bit più significativi della word all'indirizzo \%MW23 viene usato
+        un blocco CNA. I primi quattro bit consistono del risultato della comparazione della lettura
+        di ciascuna fotoresistenza con due soglie (definite, come si può vedere nella
+        tabella~\ref{tab:blocchi-plc}, come 0 e 100), mentre il restante bit corrisponde allo stato
+        reale dell'elettromagnete.
+    \item La lettura della posizione reale in Z, all'ingresso IB, viene mandata direttamente
+        all'indirizzo \%MW22.
+    \item I tre bit della \%MW19 vengono esposti, grazie ad un blocco CAN, come tre uscite a relè
+        del PLC (Q1 fino a Q3) secondo il meccanismo descritto in precedenza dei resistori pull-up.
+\end{itemize}
+
+\begin{figure*}[htbp]\centering
+    \caption{Il programma caricato nel PLC.}\label{fig:programma-zelio}
+    \includegraphics[width=\linewidth]{programma-zelio}
+\end{figure*}
 
 \begin{table}[htbp]\centering
     \caption{Gli ingressi del PLC.}\label{tab:plc-inputs}
@@ -371,14 +402,79 @@ TODO
     \bottomrule\end{tabularx}
 \end{table}
 
+La scelta del linguaggio di programmazione in FBD (anche noto come FUP per i PLC targati Siemens) è
+stata a noi obbligata dalla scelta dell'inclusione del modulo aggiuntivo SR3NET01BD, il quale impone
+appunto sia la programmazione in FBD che l'utilizzo di un PLC a \qty{24}{\volt}. In assenza di
+questa restrizione, i PLC sono programmabili in cinque linguaggi secondo la terza parte dello
+standard IEC 61131 (precedentemente noto come IEC 1131), che risale al 1993 e standardizza cinque
+linguaggi di programmazione, di cui tre grafici e due testuali \cite{lewis_1998}. I tre linguaggi
+grafici seguono un preciso crescendo di complessità/flessibilità.
+\begin{enumerate}
+    \item Il linguaggio \emph{Ladder Diagram} (LD o KOP per i tedeschi) è il più diffuso nonché il
+        più antico, ma anche il più \quot{semplice}. Venne sviluppato inizialmente dall'azienda
+        Allen-Bradley per consentire agli elettrotecnici la programmazione dei PLC. Appunto per tale
+        motivo è il più simile ai diagrammi circuitali, ovvero alla logica cablata che volle
+        sostituire trasponendola nel mondo informatico. Dietro la sua semplicità apparente si
+        nasconde una inevitabile complessità, che viene fuori man mano che il programma sul PLC
+        cresce.
+    \item Per rendere più semplice la gestione di programmi complessi, venne inventata la
+        programmazione in \emph{Function Block Diagram} (FBD o FUP). Essi sono più simili a
+        diagrammi a blocchi che a diagrammi circuitali, pertanto hanno una curva di apprendimento
+        inizialmente più ripida ma in ultima analisi rendono più maneggevole progetti di media/larga
+        scala.
+    \item Più recentemente, è stato sviluppato il \emph{sequential function chart} (SFC), simile
+        alle \emph{reti di Petri}. Tali reti, e quindi l'SFC, sono atte alla modellazione di sistemi
+        ad eventi discreti, permettendo la facile implementazioni di macchine/automi a stati finiti.
+\end{enumerate}
+I due restanti testuali sono la \emph{Instruction List} (IL o AWL), ovvero praticamente la
+rappresentazione testuale dell'LD, e lo \emph{Structured Text}, un linguaggio di più alto livello
+simile al C++.
 
 \section{Sistema SCADA}
 
-Il sistema SCADA è stato realizzato con il software Vijeo Citect. Esso comunica in tempo reale con
-il PLC (e quindi con Arduino) mediante il protocollo Modbus, e permette di monitorare lo stato del
-sistema e di controllarlo manualmente. In particolare è possibile controllare manualmente le
-posizioni di tutte e tre le assi, attivare/disattivare il magnete e ottenere le letture di tutte le
-zone di carico/scarico.
+I sistemi SCADA (acronimo dall'inglese \emph{Supervisory Control And Data Acquisition}) sono dei
+sistemi informatici distribuiti utilizzati per il controllo e il monitoraggio remoto dei PLC
+\cite{daneels_salter,ferrazza,sielco}. Essi si compongono di:
+\begin{itemize}
+    \item uno o più computer che fungono da interfaccia uomo-macchina e che eseguono le funzioni di
+        supervisione, controllo e acquisizione dati;
+    \item una serie di unità periferiche (PLC) che si interfacciano direttamente con il processo
+        tramite sensori e attuatori;
+    \item una rete di comunicazione che assicura lo scambio di informazioni tra i computer e le
+        unità periferiche tramite vari mezzi trasmissivi e protocolli.
+\end{itemize}
+
+La comunicazione tra il PLC e lo SCADA avviene mediante il protocollo MODNET, ovvero il protocollo
+MODBUS veicolato dal protocollo TCP/IP. Esso dà accesso a 64 bit (impacchettati in quattro interi)
+in lettura dal PLC e 64 bit in scrittura dal PLC. Al fine di utilizzarli al meglio, si possono
+utilizzare questi interi come valori numerici oppure scinderli nei loro bit costituenti per
+trasmettere dati booleani. I quattro interi in lettura sul PLC, ovvero ingressi del programma, sono
+indicati come \mono{\%MW16} fino a \mono{\%MW19}. È possibile indicare uno specifico bit aggiungendo
+come suffisso la sua posizione a partire dal meno significativo (e.g.\@ \mono{\%MW16.15} è il bit
+più significativo di J1). Il discorso è del tutto analogo per gli interi in scrittura dal PLC,
+ovvero uscite del programma, che vanno da \mono{\%MW20} a \mono{\%MW23}.
+
+Il sistema SCADA (illustrato in figura~\ref{fig:scada}) è stato realizzato con il software Vijeo
+Citect. Esso comunica in tempo reale con il PLC (e quindi con Arduino), e permette di monitorare lo
+stato del sistema e di controllarlo manualmente. In particolare è possibile controllare manualmente
+le posizioni di tutte e tre le assi, attivare/disattivare il magnete e ottenere le letture di tutte
+le zone di carico/scarico. Ciò avviene in tempo reale sia in modalità manuale che in modalità
+automatica.
+
+Per configurare la comunicazione è stato utilizzato l'apposito \emph{Express Wizard} presente
+all'interno del software. Per la dimostrazione del sistema è stata utilizzata come rete un iPhone,
+che presentava come sub-net mask \mono{255.255.255.40} e gateway \mono{172.20.10.1}, dandoci come
+possibili scelte per l'IP del PLC da \mono{172.20.10.2} fino a \mono{172.20.10.14}. È stata
+selezionato arbitrariamente l'indirizzo terminante nel numero tredici.
+
+Avendo costruito la grafica con il \emph{Citect Graphics Editor} (cfr.\@ figura~\ref{fig:scada}), la
+programmazione dei comportamenti dei pulsanti nonché degli indicatori è stata realizzata
+nell'apposito linguaggio Cicode. I pulsanti permettono di abilitare il controllo manuale, commutare
+lo stato dell'elettromagnete e spostare il carroponte lungo l'asse X, andando dal porto alla nave e
+viceversa, nonché lungo gli assi Y e Z. Indicator luminosi mostrano la presenza e l'assenza dei
+container nelle quattro zone, nonché la posizione del carroponte e lo stato di abilitazione del
+controllo manuale e dell'elettromagnete. Nella tabella~\ref{tab:tags} vengono elencate tutte le tag
+utilizzate.
 
 \begin{figure}[htbp]\centering
     \caption{Il sistema SCADA in funzione.}\label{fig:scada}
@@ -390,10 +486,6 @@ zone di carico/scarico.
     \qrcode{https://www.youtube.com/playlist?list=PLQibPYPJUsXOkAgrr44d6yh03rm6YIBDL}
 \end{figure}
 
-% \begin{figure}[htbp]\centering
-%     \caption{Il modello 3D del carroponte.}
-%     \includegraphics[width=\linewidth]{render-carroponte.png}
-% \end{figure}
 \begin{table*}[htbp]\centering
     \caption{Tag di Vijeo Citect.}\label{tab:tags}
     \begin{tabular}{@{}lcc@{}}\toprule
@@ -413,7 +505,23 @@ zone di carico/scarico.
     \bottomrule\end{tabular}
 \end{table*}
 
+\section{Conclusioni}
+
+Complessivamente il progetto è da considerarsi un successo: Il controllo automatico funziona come
+previsto ed è perfettamente telecontrollabile e telemonitorabile grazie allo SCADA. Il budget è
+stato mantenuto ampiamente, grazie anche allo spunto ingegneristico dei progettisti, ed il modello
+risultato complessivamente gradevole all'occhio.
+
+In un futuro possibile, tale prototipo potrebbe essere preso come spunto per l'implementazione di un
+vero carroponte completamente automatizzato ed integrato in una rete industriale di logistica.
+
+Si ringraziano in primis i progettisti (tra i quali l'autore della presente relazione, che ringrazia
+personalmente i suoi compagni per la loro bravura e per la loro compagnia) e soprattutto il
+professore Francesco Maria Raimondi per lo spunto di crescita.
+
 \printbibliography
+
+\clearpage
 
 \tcbinputlisting{title={Lo sketch principale.}, minted language=cpp, listing file=../ProgrammaPrincipale/ProgrammaPrincipale.ino}
 
@@ -422,16 +530,6 @@ zone di carico/scarico.
 
 \tcbinputlisting{title={Header per la gestione delle zone.}, minted language=cpp, listing file=../ProgrammaPrincipale/Zone.hpp}
 \tcbinputlisting{title={File principale per la gestione delle zone.}, minted language=cpp, listing file=../ProgrammaPrincipale/Zone.cpp}
-
-\begin{figure*}[htbp]\centering
-    \caption{Lo schema elettrico del sistema.}\label{fig:schema-elettrico}
-    \includegraphics[width=\linewidth]{SchemaKiCAD}
-\end{figure*}
-
-\begin{figure*}[htbp]\centering
-    \caption{Il programma caricato nel PLC.}\label{fig:programma-zelio}
-    \includegraphics[width=\linewidth]{programma-zelio}
-\end{figure*}
 
 \end{document}
 % vim: ft=tex
