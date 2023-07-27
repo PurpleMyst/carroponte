@@ -9,7 +9,6 @@
 
 \begin{document}
 
-% TODO: better title
 \twocolumn[{\begin{figure}[H]
         \setlength{\linewidth}{\textwidth}
         \setlength{\hsize}{\textwidth}
@@ -24,7 +23,7 @@
         \end{NiceTabular}
 \end{figure}}]
 
-\tableofcontents\thispagestyle{empty}
+\tableofcontents
 
 \begin{abstract}
     Nella presente relazione si descrive il progetto di un carroponte smart, ovvero un carroponte
@@ -263,7 +262,7 @@ in grado di rilevare tale cambiamento.
 
 \begin{figure*}[htbp]\centering
     \caption{Lo schema elettrico del sistema.}\label{fig:schema-elettrico}
-    \includegraphics[width=\linewidth]{SchemaKiCAD}
+    \includegraphics[height=\textheight]{SchemaKiCAD}
 \end{figure*}
 
 \section{Sistema di controllo}
@@ -361,7 +360,7 @@ invece il programma.
 
 \begin{figure*}[htbp]\centering
     \caption{Il programma caricato nel PLC.}\label{fig:programma-zelio}
-    \includegraphics[width=\linewidth]{programma-zelio}
+    \includegraphics[height=0.95\textheight]{programma-zelio}
 \end{figure*}
 
 \begin{table}[htbp]\centering
@@ -519,9 +518,26 @@ container nelle quattro zone, nonché la posizione del carroponte e lo stato di 
 controllo manuale e dell'elettromagnete. Nella tabella~\ref{tab:tags} vengono elencate tutte le tag
 utilizzate.
 
+Seguono alcuni dettagli implementativi dello SCADA.
+\begin{itemize}
+    \item Data l'incertezza delle letture delle posizioni in tempo reale, gli indicatori della
+        posizione nave/porto hanno in essi codificata una tolleranza di \ang{10} per elidere gli
+        errori di lettura.
+    \item La posizione in tempo reale dei tre assi è tarata manualmente in base alle letture di
+        tensione in corrispondenza di posizioni note, e poi convertita in gradi mediante una
+        semplice proporzione usando l'espressione Cicode che recita
+        {\small\mintinline{basic}{IntToStr(TAG/A*B) + "°"}} con $A = \ang{180}$ e $B = \ang{226}$ per
+        gli assi X/Y oppure $A = \ang{105}$ e $B = \ang{27}$ per l'asse Z.
+\end{itemize}
+
 \begin{figure}[htbp]\centering
     \caption{Il sistema SCADA in funzione.}\label{fig:scada}
     \includegraphics[width=\linewidth]{scada.png}
+\end{figure}
+
+\begin{figure}[htbp]\centering
+    \caption{Lo SCADA per com'è visto nel Graphics Builder.}\label{fig:scada-builder}
+    \includegraphics[width=\linewidth]{graphics-builder.png}
 \end{figure}
 
 \begin{figure}[htbp]\centering
@@ -529,24 +545,24 @@ utilizzate.
     \qrcode{https://www.youtube.com/playlist?list=PLQibPYPJUsXOkAgrr44d6yh03rm6YIBDL}
 \end{figure}
 
-\begin{table*}[htbp]\centering
+\begin{table}[!htbp]\centering
     \caption{Tag di Vijeo Citect.}\label{tab:tags}
-    \begin{tabular}{@{}lcc@{}}\toprule
-        \textbf{Nome}                               & \textbf{Indirizzo} & \textbf{Tipo di dati} \\ \midrule
-        Posizione\_desiderata\_X\_J1            & \%MW16       & INT                   \\
-        Posizione\_desiderata\_Y\_J2            & \%MW17       & INT                   \\
-        Enable\_controllo\_manuale\_J4\_1        & \%MW19.0     & DIGITAL               \\
-        Stato\_desiderato\_elettromagnete\_J4\_2 & \%MW19.1     & DIGITAL               \\
-        Posizione\_desiderata\_Z\_J4\_3          & \%MW19.2     & DIGITAL               \\
-        Posizione\_reale\_X\_O1                 & \%MW20       & INT                   \\
-        Posizione\_reale\_Y\_O2                 & \%MW21       & INT                   \\
-        Posizione\_reale\_Z\_O3                 & \%MW22       & INT                   \\
-        Zona1\_O4\_1                           & \%MW23.0     & DIGITAL               \\
-        Zona2\_O4\_2                           & \%MW23.1     & DIGITAL               \\
-        Zona3\_O4\_3                           & \%MW23.2     & DIGITAL               \\
-        Zona4\_O4\_4                           & \%MW23.3     & DIGITAL               \\
-    \bottomrule\end{tabular}
-\end{table*}
+    \begin{tabularx}{\columnwidth}{@{}Xcc@{}}\toprule
+        \textbf{Nome}                                    & \textbf{Indirizzo} & \textbf{Tipo di dati} \\ \midrule
+        {\small Posizione\_\-desiderata\_\-X\_\-J1              } & \%MW16             & INT                   \\
+        {\small Posizione\_\-desiderata\_\-Y\_\-J2              } & \%MW17             & INT                   \\
+        {\small Enable\_\-controllo\_\-manuale\_\-J4\_\-1       } & \%MW19.0           & DIGITAL               \\
+        {\small Stato\_\-desiderato\_\-elettromagnete\_\-J4\_\-2} & \%MW19.1           & DIGITAL               \\
+        {\small Posizione\_\-desiderata\_\-Z\_\-J4\_\-3         } & \%MW19.2           & DIGITAL               \\
+        {\small Posizione\_\-reale\_\-X\_\-O1                   } & \%MW20             & INT                   \\
+        {\small Posizione\_\-reale\_\-Y\_\-O2                   } & \%MW21             & INT                   \\
+        {\small Posizione\_\-reale\_\-Z\_\-O3                   } & \%MW22             & INT                   \\
+        {\small Zona1\_\-O4\_\-1                                } & \%MW23.0           & DIGITAL               \\
+        {\small Zona2\_\-O4\_\-2                                } & \%MW23.1           & DIGITAL               \\
+        {\small Zona3\_\-O4\_\-3                                } & \%MW23.2           & DIGITAL               \\
+        {\small Zona4\_\-O4\_\-4                                } & \%MW23.3           & DIGITAL               \\
+    \bottomrule\end{tabularx}
+\end{table}
 
 \section{Conclusioni}
 
@@ -562,7 +578,7 @@ Si ringraziano in primis i progettisti (tra i quali l'autore della presente rela
 personalmente i suoi compagni per la loro bravura e per la loro compagnia) e soprattutto il
 professore Francesco Maria Raimondi per lo spunto di crescita.
 
-\clearpage
+% \clearpage
 \printbibliography
 \clearpage
 
